@@ -2,7 +2,10 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.1-blue?style=flat-square)
 ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange?style=flat-square)
-![Platform](https://img.shields.io/badge/platform-Project%20Ascension-green?style=flat-square)
+[![Platform](https://img.shields.io/badge/platform-Project%20Ascension-green?style=flat-square)](https://ascension.gg/)
+&nbsp;&nbsp;
+[![Patreon](https://img.shields.io/badge/-Patreon-red?logo=patreon&style=flat-square)](https://www.patreon.com/Xurkon)
+[![PayPal](https://img.shields.io/badge/-PayPal-blue?logo=paypal&style=flat-square)](https://paypal.me/kancerous)
 
 > **Backported from [HizurosWoWAddOns/FarmHud](https://github.com/HizurosWoWAddOns/FarmHud)** for WoW 3.3.5a (Project Ascension)
 
@@ -10,7 +13,7 @@
 
 Turn your minimap into a HUD for farming ore, herbs, and other resources!
 
-![FarmHud Screenshot1](./.github/media/farmhud1.jpg) ![FarmHud Screenshot2](./.github/media/farmhud2.jpg)
+![FarmHud Screenshot1](./farmhud1.jpg) ![FarmHud Screenshot2](./farmhud2.jpg)
 
 ## Minimap / Nodes / FarmHud
 
