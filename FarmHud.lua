@@ -1453,39 +1453,44 @@ function FarmHudMixin:OnLoad()
 
 	self:RegisterForeignAddOnObject(Minimap, addon);
 
-	hooksecurefunc(Minimap, "SetPlayerTexture", function(_, texture)
-		if FarmHud:IsVisible() and not _G.FarmHud_InSetPlayerTexture then
-			playerDot_custom = texture;
-			SetPlayerDotTexture(true);
-		end
-	end);
+	-- TAINT FIX v1.0.3: All hooksecurefunc calls on Minimap removed
+	-- These hooks inject addon code into Blizzard's secure call path, causing taint
+	-- The hooks were intercepting SetPlayerTexture, SetZoom, SetAlpha, EnableMouse
+	-- Trade-off: Some visual features may not work perfectly, but action bars will function
 
-	hooksecurefunc(Minimap, "SetZoom", function(_, level)
-		if FarmHud:IsVisible() and level ~= 0 then
-			MinimapMT.SetZoom(Minimap, 0);
-		end
-	end);
+	-- hooksecurefunc(Minimap, "SetPlayerTexture", function(_, texture)
+	-- 	if FarmHud:IsVisible() and not _G.FarmHud_InSetPlayerTexture then
+	-- 		playerDot_custom = texture;
+	-- 		SetPlayerDotTexture(true);
+	-- 	end
+	-- end);
 
-	hooksecurefunc(Minimap, "SetAlpha", function(_, level)
-		if not FarmHud:IsVisible() then
-			return; -- ignore
-		end
-		if FarmHudDB.background_alpha ~= level then
-			FarmHud:UpdateMapAlpha("HookSetAlpha")
-		end
-	end);
+	-- hooksecurefunc(Minimap, "SetZoom", function(_, level)
+	-- 	if FarmHud:IsVisible() and level ~= 0 then
+	-- 		MinimapMT.SetZoom(Minimap, 0);
+	-- 	end
+	-- end);
 
-	-- hooksecurefunc(Minimap,"SetMaskTexture",function(_,texture)
+	-- hooksecurefunc(Minimap, "SetAlpha", function(_, level)
+	-- 	if not FarmHud:IsVisible() then
+	-- 		return; -- ignore
+	-- 	end
+	-- 	if FarmHudDB.background_alpha ~= level then
+	-- 		FarmHud:UpdateMapAlpha("HookSetAlpha")
+	-- 	end
+	-- end);
+
+	-- hooksecurefunc(Minimap,\"SetMaskTexture\",function(_,texture)
 	-- 	FarmHudMinimapDummy.bg:SetMask(texture);
 	-- end);
 
-	hooksecurefunc(Minimap, "EnableMouse", function(_, bool)
-		-- if not trackEnableMouse or suppressNextMouseEnable then
-		-- 	suppressNextMouseEnable = false;
-		-- 	return
-		-- end
-		-- ns:print(L.PleaseReportThisMessage,"<EnableMouse>",bool,"|n"..debugstack());
-	end);
+	-- hooksecurefunc(Minimap, "EnableMouse", function(_, bool)
+	-- 	-- if not trackEnableMouse or suppressNextMouseEnable then
+	-- 	-- 	suppressNextMouseEnable = false;
+	-- 	-- 	return
+	-- 	-- end
+	-- 	-- ns:print(L.PleaseReportThisMessage,"<EnableMouse>",bool,"|n"..debugstack());
+	-- end);
 
 	-- EditModeManagerFrame removed for 3.3.5a
 
