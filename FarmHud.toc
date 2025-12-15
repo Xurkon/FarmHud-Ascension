@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: FarmHud (Ascension)
-## Version: 1.0.1
+## Version: 1.0.2
 ## Notes: Turns your minimap into a hud for gathering resources! Optimized for Project Ascension.
 ## Author: Hizuro, CodeRedLin (Backported)
 ## OptionalDeps: Ace3, CallbackHandler-1.0, LibDBIcon-1.0, LibStub, HereBeDragons

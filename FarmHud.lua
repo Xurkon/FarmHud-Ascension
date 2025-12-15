@@ -176,7 +176,7 @@ local minimapScripts = {
 }
 local minimapCreateTextureTable = {};
 local trackEnableMouse, suppressNextMouseEnable = false, false; -- try to get more info for mouse enable bug
-local excludeInstance = {                                     -- exclude instance from hideInInstace option
+local excludeInstance = {                                       -- exclude instance from hideInInstace option
 
 }
 
@@ -877,25 +877,13 @@ function FarmHudMixin:OnShow()
 
 
 	-- cache script entries
+	-- TAINT FIX: Script modifications removed - they were causing action bar taint
+	-- We now leave Minimap scripts untouched to prevent taint spread
 	local OnMouseUp = Minimap:GetScript("OnMouseUp");
 	local OnMouseDown = Minimap:GetScript("OnMouseDown");
-	if OnMouseDown and OnMouseUp == nil then -- for ElvUI. They added to OnMouseUp a dummy function and using OnMouseDown instead.
-		mps.OnMouseDown = OnMouseDown;
-		MinimapMT.SetScript(Minimap, "OnMouseDown", Minimap_OnClick);
-	elseif OnMouseUp ~= Minimap_OnClick then
-		mps.OnMouseUp = OnMouseUp;
-		MinimapMT.SetScript(Minimap, "OnMouseUp", Minimap_OnClick);
-	end
-	for name, todo in pairs(minimapScripts) do
-		local fnc
-		if name == "OnMouseDown" and not mps.OnMouseDown then
-			fnc = Minimap:GetScript(name);
-		end
-		if fnc then
-			mps[name] = fnc;
-			MinimapMT.SetScript(Minimap, name, nil);
-		end
-	end
+	mps.OnMouseUp = OnMouseUp;
+	mps.OnMouseDown = OnMouseDown;
+	-- Note: We no longer modify scripts, just cache them for reference
 
 	-- cache minimap anchors
 	for i = 1, Minimap:GetNumPoints() do
@@ -998,12 +986,13 @@ function FarmHudMixin:OnShow()
 		end
 	end
 
-	-- function replacements for Minimap while FarmHud is enabled.
-	-- Should prevent problems with repositioning of minimap buttons from other addons.
-	for k, v in pairs(replacements) do
-		mps.replacements[k] = Minimap[k];
-		Minimap[k] = v;
-	end
+	-- TAINT FIX: Method replacements removed - they were causing action bar taint
+	-- We now leave Minimap methods untouched to prevent taint spread
+	-- The replacements table was used to intercept GetWidth/GetCenter/etc but this taints Minimap
+	-- for k, v in pairs(replacements) do
+	-- 	mps.replacements[k] = Minimap[k];
+	-- 	Minimap[k] = v;
+	-- end
 
 	if FarmHud_ToggleSuperTrackedQuest and FarmHudDB.SuperTrackedQuest then
 		FarmHud_ToggleSuperTrackedQuest(ns.QuestArrowToken, true); -- FarmHud_QuestArrow
@@ -1037,10 +1026,10 @@ function FarmHudMixin:OnHide()
 
 	trackEnableMouse = false;
 
-	-- restore function replacements for Minimap
-	for k in pairs(replacements) do
-		Minimap[k] = mps.replacements[k];
-	end
+	-- TAINT FIX: Method restorations removed - we no longer replace methods
+	-- for k in pairs(replacements) do
+	-- 	Minimap[k] = mps.replacements[k];
+	-- end
 
 	Minimap:Hide();
 	MinimapMT.SetParent(Minimap, mps.parent);
@@ -1062,23 +1051,24 @@ function FarmHudMixin:OnHide()
 	FarmHudMinimapDummy:Hide();
 	self.cluster:Hide();
 
-	if mps.OnMouseDown and Minimap:GetScript("OnMouseDown") == nil then
-		MinimapMT.SetScript(Minimap, "OnMouseUp", mps.OnMouseUp);
-		MinimapMT.SetScript(Minimap, "OnMouseDown", mps.OnMouseDown);
-		FarmHudMinimapDummy:SetScript("OnMouseUp", nil);
-		FarmHudMinimapDummy:SetScript("OnMouseDown", nil);
-		FarmHudMinimapDummy:EnableMouse(false);
-	elseif mps.OnMouseUp then
-		MinimapMT.SetScript(Minimap, "OnMouseUp", mps.OnMouseUp);
-		FarmHudMinimapDummy:SetScript("OnMouseUp", nil);
-		FarmHudMinimapDummy:EnableMouse(false);
-	end
+	-- TAINT FIX: Script restorations removed - we no longer modify scripts
+	-- if mps.OnMouseDown and Minimap:GetScript("OnMouseDown") == nil then
+	-- 	MinimapMT.SetScript(Minimap, "OnMouseUp", mps.OnMouseUp);
+	-- 	MinimapMT.SetScript(Minimap, "OnMouseDown", mps.OnMouseDown);
+	-- 	FarmHudMinimapDummy:SetScript("OnMouseUp", nil);
+	-- 	FarmHudMinimapDummy:SetScript("OnMouseDown", nil);
+	-- 	FarmHudMinimapDummy:EnableMouse(false);
+	-- elseif mps.OnMouseUp then
+	-- 	MinimapMT.SetScript(Minimap, "OnMouseUp", mps.OnMouseUp);
+	-- 	FarmHudMinimapDummy:SetScript("OnMouseUp", nil);
+	-- 	FarmHudMinimapDummy:EnableMouse(false);
+	-- end
 
-	for name, todo in pairs(minimapScripts) do
-		if type(mps[name]) == "function" then
-			MinimapMT.SetScript(Minimap, name, mps[name]);
-		end
-	end
+	-- for name, todo in pairs(minimapScripts) do
+	-- 	if type(mps[name]) == "function" then
+	-- 		MinimapMT.SetScript(Minimap, name, mps[name]);
+	-- 	end
+	-- end
 
 	MinimapMT.ClearAllPoints(Minimap);
 	for i = 1, #mps.anchors do
@@ -1226,7 +1216,7 @@ tooltipFrame:SetScript("OnUpdate", function(self, elapsed)
 	local cx, cy = Minimap:GetCenter()
 	local dx, dy = (mouseX / scale) - cx, (mouseY / scale) - cy
 	if (dx * dx + dy * dy < (Minimap:GetWidth() / 2) ^ 2) then
-		Minimap:PingLocation(dx, dy)  -- This forces a ping, but maybe we just need to let the game handle it if strata is correct
+		Minimap:PingLocation(dx, dy) -- This forces a ping, but maybe we just need to let the game handle it if strata is correct
 	end
 	-- Actually 3.3.5a Minimap doesn't easily expose blip tooltips manually without Ping or native hover.
 	-- If native hover isn't working, strata/mask is likely the issue.

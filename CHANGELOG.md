@@ -8,6 +8,20 @@
 
 ---
 
+## [1.0.2] (2025-12-14)
+
+**Aggressive Taint Fix**
+
+### Critical Bug Fixes
+
+- **Removed all Minimap script modifications** - `MinimapMT.SetScript()` calls were the primary taint source
+- **Removed all Minimap method replacements** - `Minimap[k] = v` pattern was spreading taint to action bars
+- These changes prevent taint by leaving Minimap's internal state completely untouched
+
+> ⚠️ **Trade-off**: Some minimap button repositioning features from other addons may not work perfectly with FarmHud open, but action bars will now function correctly.
+
+---
+
 ## [1.0.1] (2025-12-14)
 
 **Taint Fix Update**
