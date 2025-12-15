@@ -890,60 +890,65 @@ function FarmHudMixin:OnShow()
 		mps.anchors[i] = { Minimap:GetPoint(i) };
 	end
 
-	-- move child and regions of a frame to FarmHudDummy
-	for object, movedElements in pairs(foreignObjects) do
-		local parent, point
-		-- childs
-		local childs = { object:GetChildren() };
-		for i = 1, #childs do
-			if not ignoreFrames[childs[i]:GetName()] then
-				parent, point = objectToDummy(childs[i], true, "OnShow.GetChildren");
-				if parent or point then
-					tinsert(movedElements.childs, childs[i]);
-				end
-			end
-		end
+	-- TAINT FIX v1.0.4: Disabled ALL objectToDummy calls
+	-- This function was replacing methods (SetParent, SetPoint) on child frames and
+	-- calling SetScript on them, which caused massive taint spread to action bars
+	-- Trade-off: Some minimap button addons may not work correctly with FarmHud
 
-		-- child textures/fontstrings
-		local regions = { object:GetRegions() };
-		for r = 1, #regions do
-			parent, point = objectToDummy(regions[r], true, "OnShow.GetRegions");
-			if parent or point then
-				tinsert(movedElements.regions, regions[r]);
-			end
-		end
-	end
+	-- move child and regions of a frame to FarmHudDummy
+	-- for object, movedElements in pairs(foreignObjects) do
+	-- 	local parent, point
+	-- 	-- childs
+	-- 	local childs = { object:GetChildren() };
+	-- 	for i = 1, #childs do
+	-- 		if not ignoreFrames[childs[i]:GetName()] then
+	-- 			parent, point = objectToDummy(childs[i], true, "OnShow.GetChildren");
+	-- 			if parent or point then
+	-- 				tinsert(movedElements.childs, childs[i]);
+	-- 			end
+	-- 		end
+	-- 	end
+
+	-- 	-- child textures/fontstrings
+	-- 	local regions = { object:GetRegions() };
+	-- 	for r = 1, #regions do
+	-- 		parent, point = objectToDummy(regions[r], true, "OnShow.GetRegions");
+	-- 		if parent or point then
+	-- 			tinsert(movedElements.regions, regions[r]);
+	-- 		end
+	-- 	end
+	-- end
 
 	-- reanchor named frames that not have minimap as parent but anchored on it
 	mps.anchoredFrames = {};
-	for _, frameName in ipairs(anchoredFrames) do
-		local frame;
-		if frameName:match("%.") then
-			local path = { strsplit(".", frameName) };
-			if _G[path[1]] then
-				local f = _G[path[1]]
-				for i = 2, #path do
-					if f[path[i]] then
-						f = f[path[i]];
-					end
-				end
-				frame = f;
-			end
-		end
-		if _G[frameName] then
-			frame = _G[frameName];
-		end
-		if frame and objectToDummy(frame, true, "OnShow.anchoredFrames") then
-			mps.anchoredFrames[frameName] = true;
-		end
-	end
+	-- for _, frameName in ipairs(anchoredFrames) do
+	-- 	local frame;
+	-- 	if frameName:match("%.") then
+	-- 		local path = { strsplit(".", frameName) };
+	-- 		if _G[path[1]] then
+	-- 			local f = _G[path[1]]
+	-- 			for i = 2, #path do
+	-- 				if f[path[i]] then
+	-- 					f = f[path[i]];
+	-- 				end
+	-- 			end
+	-- 			frame = f;
+	-- 		end
+	-- 	end
+	-- 	if _G[frameName] then
+	-- 		frame = _G[frameName];
+	-- 	end
+	-- 	if frame and objectToDummy(frame, true, "OnShow.anchoredFrames") then
+	-- 		mps.anchoredFrames[frameName] = true;
+	-- 	end
+	-- end
 
 	-- nameless textures
-	if #minimapCreateTextureTable > 0 then
-		for i = 1, #minimapCreateTextureTable do
-			objectToDummy(minimapCreateTextureTable[i], true, "OnShow.minimapCreateTextureTable");
-		end
-	end
+	-- if #minimapCreateTextureTable > 0 then
+	-- 	for i = 1, #minimapCreateTextureTable do
+	-- 		objectToDummy(minimapCreateTextureTable[i], true, "OnShow.minimapCreateTextureTable");
+	-- 	end
+	-- end
 
 	-- move and change minimap for FarmHud
 	MinimapMT.Hide(Minimap);
