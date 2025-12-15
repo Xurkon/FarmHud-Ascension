@@ -1,8 +1,8 @@
 ## Interface: 30300
-## Title: FarmHud (Ascension)
-## Version: 1.0.4
-## Notes: Turns your minimap into a hud for gathering resources! Optimized for Project Ascension.
-## Author: Hizuro, CodeRedLin (Backported)
+## Title: FarmHud
+## Version: 2.0.0
+## Notes: Turns your minimap into a HUD for gathering resources! Taint-free for Project Ascension.
+## Author: Xurkon
 ## OptionalDeps: Ace3, CallbackHandler-1.0, LibDBIcon-1.0, LibStub, HereBeDragons
 ## SavedVariables: FarmHudDB
 
@@ -27,4 +27,3 @@ FarmHud.xml
 modules\CardinalPoints.lua
 modules\TrailPath.lua
 modules\RangeCircles.lua
-

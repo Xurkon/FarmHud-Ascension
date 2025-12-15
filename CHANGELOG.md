@@ -1,124 +1,44 @@
-# FarmHud
+# FarmHud Changelog
 
-## Known Issues / To-Do
+## [2.0.0] - 2025-12-15
 
-- [ ] **TrailPath Zone Scaling** - Adjust scaling factors for all zones to ensure trail path pins display correctly on both minimap and HUD
-- [ ] Verify trail path behavior in dungeons and instances
-- [ ] Test trail path in Outland and Northrend zones
+**Complete Rewrite** - Taint-free implementation for Project Ascension
 
----
+### New Features
 
-## [1.0.2] (2025-12-14)
+- **No action bar taint** - Works correctly when entering combat with HUD open
+- **Custom player arrow/dot** - 6 texture options including hide, gold, white, black dots
+- **HUD symbol scale** - Scale addon pins (Routes, HandyNotes, etc.)
+- **HUD size** - Adjustable HUD diameter
+- **Text scale** - Adjustable cardinal direction font size
+- **Rotation option** - Enable/disable minimap rotation
+- **Hide in instances** - Auto-hide HUD when entering dungeons/raids/battlegrounds
+- **Hide in combat** - Auto-hide HUD when entering combat
+- **Scroll wheel lock** - Shift+scroll keybinds work while HUD is open
+- **Zoom save/restore** - Minimap zoom restored when HUD closes
+- **Coordinates display** - Show player coordinates on HUD
+- **Time display** - Show server and/or local time on HUD
 
-**Aggressive Taint Fix**
+### Technical Changes
 
-### Critical Bug Fixes
+- Complete rewrite using simple, non-tainting approach
+- Removed all Minimap method replacements (taint source)
+- Removed all Minimap script modifications (taint source)
+- Removed all hooksecurefunc on Minimap (taint source)
+- Custom player arrow overlay instead of SetPlayerTexture API
+- EnableMouseWheel(false) to allow keybinds within HUD area
+- Event-based auto-hide using PLAYER_REGEN_DISABLED/ENABLED and ZONE_CHANGED_NEW_AREA
 
-- **Removed all Minimap script modifications** - `MinimapMT.SetScript()` calls were the primary taint source
-- **Removed all Minimap method replacements** - `Minimap[k] = v` pattern was spreading taint to action bars
-- These changes prevent taint by leaving Minimap's internal state completely untouched
+### Work In Progress
 
-> ⚠️ **Trade-off**: Some minimap button repositioning features from other addons may not work perfectly with FarmHud open, but action bars will now function correctly.
-
----
-
-## [1.0.1] (2025-12-14)
-
-**Taint Fix Update**
-
-### Critical Bug Fixes
-
-- **Fixed action bar taint issue** - Action bars now work correctly when entering combat with FarmHud open
-- Added `InCombatLockdown()` check to `Toggle()` preventing taint spread during combat
-- Added `InCombatLockdown()` check to `OnShow()` deferring HUD display until combat ends
-- Wrapped `EnableMouse()` calls with combat lockdown checks to protect action bar state
-- Deferred combat hide/show using `C_Timer.After(0, ...)` to avoid tainting during combat transitions
-- Updated combat event handlers (`PLAYER_REGEN_DISABLED`/`ENABLED`) to use deferred UI updates
-
-### User Experience
-
-- FarmHud now displays a warning message if you try to toggle during combat
-- "Hide in Combat" setting now works without causing taint
+- Custom gather circle options
+- Range circles module
+- TrailPath module
+- Tracking type toggles
 
 ---
 
-## [3.3.5a-backport] (2025-12-07)
+## Previous Version History
 
-**Complete backport to WoW 3.3.5a (Project Ascension)**
-
-### Core API Polyfills
-
-- Added `C_Minimap` polyfill wrapping `GetNumTrackingTypes()`, `GetTrackingInfo()`, `SetTracking()`
-- Added `C_Timer` polyfill with `After()` and `NewTicker()` implementations using OnUpdate frames
-- Added `C_Map` polyfill for `GetBestMapForUnit()`, `GetPlayerMapPosition()`, `GetMapInfo()`
-- Added `C_AddOns` polyfill wrapping `IsAddOnLoaded()`
-- Added `C_CVar` polyfill wrapping `SetCVar()`, `GetCVar()`, `GetCVarBool()`
-- Added `ns.SetShown()` and `ns.Mixin()` helper functions
-
-### Version Detection
-
-- Removed `WOW_PROJECT_ID` checks (not available in 3.3.5a)
-- Added `ns.IsClassic()`, `ns.IsClassicBC()`, `ns.IsRetail()`, `ns.IsDragonFlight()` all returning false
-
-### XML Refactoring (FarmHud.xml)
-
-- Replaced modern `mixin` XML attributes with classic `OnLoad` script handlers
-- Removed `method` script handlers, replaced with standard Lua event handlers
-- Updated all frame definitions to use WoW 3.3.5a compatible syntax
-
-### Coordinates & Time Display
-
-- Replaced `C_Timer` tickers with OnUpdate frame-based timers for coordinates display
-- Replaced `C_Timer` tickers with OnUpdate frame-based timers for time display
-- Fixed coordinate updates using `GetPlayerMapPosition("player")` directly
-
-### HUD Scaling & Sizing
-
-- Fixed `SetScales()` to clamp size to screen height preventing oversized HUD issues
-- Added fallback sizing when WorldFrame returns invalid dimensions
-- Extended hit rect insets to cover full screen for better interaction
-
-### Player Arrow/Dot
-
-- Added custom player arrow rendering system for HUD display
-- Fixed player dot texture switching between custom and Blizzard default
-- Added recursion prevention for texture updates
-
-### Modules
-
-#### CardinalPoints.lua
-
-- Fixed cardinal direction positioning and rotation for 3.3.5a
-
-#### TrailPath.lua  
-
-- Complete rewrite of trail path pin system
-- Fixed pins to remain static at world positions
-- Implemented proper minimap and HUD positioning
-- Added correct scaling based on zone size
-- Fixed fade timer functionality
-
-#### RangeCircles.lua
-
-- Adapted for 3.3.5a API compatibility
-
-### TOC Updates
-
-- Changed Interface to 30300 (WoW 3.3.5a)
-- Updated title to "FarmHud (Ascension)"
-- Updated version to "3.3.5a-backport"
-- Updated author to include backport credits
-
-### Library Dependencies
-
-- Using bundled HereBeDragons-2.0 with 3.3.5a compatibility layer
-- Using bundled LibStub, CallbackHandler-1.0, AceGUI-3.0, AceConfig-3.0
-
----
- All credit to Hizuro and any other authors that may have added commits.
-
-## [10.1.6-release](https://github.com/HizurosWoWAddOns/FarmHud/tree/10.1.6-release) (2025-08-09)
-
-[Full Changelog](https://github.com/HizurosWoWAddOns/FarmHud/commits/10.1.6-release) [Previous Releases](https://github.com/HizurosWoWAddOns/FarmHud/releases)
-
-- Update toc file  
+Earlier versions were based on HizurosWoWAddOns/FarmHud backport which had taint issues.
+This version is a complete rewrite from scratch.
