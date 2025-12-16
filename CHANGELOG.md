@@ -1,5 +1,17 @@
 # FarmHud Changelog
 
+## [2.0.2] - 2025-12-15
+
+### Bug Fixes
+
+- **Fixed ElvUI instances panel appearing in HUD** - Added direct hiding of ElvUI minimap-related frames:
+  - `LayerPickerFrame` (instance selector)
+  - `RightMiniPanel`, `LeftMiniPanel`
+  - `MinimapPanel`, `MinimapButtonFrame`
+  - `MiniMapInstanceDifficulty`, `GuildInstanceDifficulty`
+
+---
+
 ## [2.0.1] - 2025-12-15
 
 ### Bug Fixes
