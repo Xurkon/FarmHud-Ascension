@@ -432,8 +432,28 @@ end
 -- Track hidden Minimap children (ElvUI panels, etc.)
 local hiddenMinimapChildren = {}
 
+-- Global frames attached to minimap area that should be hidden during HUD
+local ELVUI_MINIMAP_FRAMES = {
+    "LayerPickerFrame",          -- Instance selector
+    "RightMiniPanel",            -- ElvUI minimap panel
+    "LeftMiniPanel",             -- ElvUI minimap panel
+    "MinimapPanel",              -- Generic minimap panel
+    "MinimapButtonFrame",        -- Minimap buttons
+    "MiniMapInstanceDifficulty", -- Instance difficulty indicator
+    "GuildInstanceDifficulty",   -- Guild difficulty indicator
+}
+
 local function HideMinimapChildren()
     wipe(hiddenMinimapChildren)
+
+    -- Hide specific global ElvUI frames by name
+    for _, frameName in ipairs(ELVUI_MINIMAP_FRAMES) do
+        local frame = _G[frameName]
+        if frame and frame:IsShown() then
+            hiddenMinimapChildren[frame] = true
+            frame:Hide()
+        end
+    end
 
     -- Get all children of Minimap frame and hide those that are visible
     for _, child in pairs({ Minimap:GetChildren() }) do
@@ -442,7 +462,7 @@ local function HideMinimapChildren()
             local name = child:GetName() or ""
             -- Only hide frames that look like UI elements (not pins)
             -- ElvUI typically uses names containing "ElvUI" or "Difficulty"
-            if name:match("ElvUI") or name:match("Difficulty") or name:match("Instance") or name:match("Button") then
+            if name:match("ElvUI") or name:match("Difficulty") or name:match("Instance") or name:match("Button") or name:match("Panel") then
                 hiddenMinimapChildren[child] = true
                 child:Hide()
             end
