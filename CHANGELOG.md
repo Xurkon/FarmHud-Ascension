@@ -1,5 +1,20 @@
 # FarmHud Changelog
 
+## [2.0.3] - 2025-12-15
+
+### New Features
+
+- **TrailPath module enabled** - Shows a trail of where you've been on the HUD, minimap, and world map
+
+### Technical Changes
+
+- Fixed `C_Timer.NewTicker` → OnUpdate frame pattern (native 3.3.5a)
+- Fixed `C_CVar.GetCVarBool` → `GetCVar()` (native 3.3.5a)
+- Added module OnShow/OnHide dispatch in FarmHud.lua
+- Added module event dispatch (PLAYER_LOGIN, PLAYER_ENTERING_WORLD, etc.)
+
+---
+
 ## [2.0.2] - 2025-12-15
 
 ### Bug Fixes

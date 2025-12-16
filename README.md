@@ -1,6 +1,6 @@
 # FarmHud
 
-![Version](https://img.shields.io/badge/version-2.0.2-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-2.0.3-blue?style=flat-square)
 ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange?style=flat-square)
 [![Platform](https://img.shields.io/badge/platform-Project%20Ascension-green?style=flat-square)](https://ascension.gg/)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://xurkon.github.io/FarmHud/)

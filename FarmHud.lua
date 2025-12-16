@@ -693,6 +693,13 @@ local function OnShow()
     if FarmHud.UpdateGatherCircle then
         FarmHud.UpdateGatherCircle()
     end
+
+    -- Dispatch to modules that have OnShow
+    for modName, mod in pairs(ns.modules) do
+        if mod.OnShow then
+            pcall(mod.OnShow)
+        end
+    end
 end
 
 local function OnHide()
@@ -730,6 +737,13 @@ local function OnHide()
 
     -- Restore native minimap player arrow
     Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
+
+    -- Dispatch to modules that have OnHide
+    for modName, mod in pairs(ns.modules) do
+        if mod.OnHide then
+            pcall(mod.OnHide)
+        end
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -1144,8 +1158,16 @@ end
 -------------------------------------------------------------------------------
 
 FarmHud:SetScript("OnEvent", function(self, event, ...)
+    -- Dispatch to FarmHud handlers
     if self[event] then
-        return self[event](self, ...)
+        self[event](self, ...)
+    end
+
+    -- Dispatch to modules that have event handlers
+    for modName, mod in pairs(ns.modules) do
+        if mod.events and mod.events[event] then
+            pcall(mod.events[event], ...)
+        end
     end
 end)
 
@@ -1154,3 +1176,4 @@ FarmHud:RegisterEvent("PLAYER_LOGOUT")
 FarmHud:RegisterEvent("PLAYER_REGEN_DISABLED")
 FarmHud:RegisterEvent("PLAYER_REGEN_ENABLED")
 FarmHud:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+FarmHud:RegisterEvent("PLAYER_ENTERING_WORLD")
