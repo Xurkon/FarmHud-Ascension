@@ -99,7 +99,7 @@ end
 FarmHudTrailPathPinMixin = {}
 
 local function UpdateVisibility(self)
-	local HUD = FarmHud:IsShown();
+	local HUD = FarmHudMapCluster:IsShown();
 	-- Check if this is a world map pin (has mapPin flag or parent is WorldMapDetailFrame)
 	local isWorldMapPin = self.isWorldMapPin or (self:GetParent() == WorldMapDetailFrame)
 
@@ -326,7 +326,7 @@ local function TrailPath_TickerFunc()
 	local currentTime = GetMicrotime();
 	local currentFacing = GetPlayerFacing() or 0; -- 0 - 6.5
 	-- Make HUD icon settings apply to trailPathOnMinimap
-	local HUD = FarmHud:IsShown();
+	local HUD = FarmHudMapCluster:IsShown();
 	local IsOnCluster = HUD or (not HUD and FarmHudDB.trailPathOnMinimap);
 
 	-- check distance between current and prev. position; skip function
@@ -660,7 +660,7 @@ function module.UpdateOptions(key, value)
 		UpdateTrailPath(value);
 	elseif key == "trailPathOnMinimap" then
 		-- Re-trigger OnShow/OnHide logic based on current HUD state
-		if FarmHud:IsShown() then
+		if FarmHudMapCluster:IsShown() then
 			module.OnShow()
 		else
 			module.OnHide()
@@ -670,7 +670,7 @@ function module.UpdateOptions(key, value)
 		local scale = FarmHudDB.trailPathScale or 1
 		for _, pin in ipairs(trailPathActive) do
 			if pin then
-				local HUD = FarmHud:IsShown();
+				local HUD = FarmHudMapCluster:IsShown();
 				local IsOnCluster = HUD or (not HUD and FarmHudDB.trailPathOnMinimap);
 				-- Update scale
 				local baseSize = 20
