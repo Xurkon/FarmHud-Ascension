@@ -429,6 +429,51 @@ local function SaveMinimapState()
     originalMinimapZoom = Minimap:GetZoom()
 end
 
+-- Track hidden Minimap children (ElvUI panels, etc.)
+local hiddenMinimapChildren = {}
+
+local function HideMinimapChildren()
+    wipe(hiddenMinimapChildren)
+
+    -- Get all children of Minimap frame and hide those that are visible
+    for _, child in pairs({ Minimap:GetChildren() }) do
+        if child and child:IsShown() then
+            -- Skip addon-specific frames we want to keep (like Routes, GatherMate pins)
+            local name = child:GetName() or ""
+            -- Only hide frames that look like UI elements (not pins)
+            -- ElvUI typically uses names containing "ElvUI" or "Difficulty"
+            if name:match("ElvUI") or name:match("Difficulty") or name:match("Instance") or name:match("Button") then
+                hiddenMinimapChildren[child] = true
+                child:Hide()
+            end
+        end
+    end
+
+    -- Also get all regions (textures, fontstrings) and hide non-essential ones
+    for _, region in pairs({ Minimap:GetRegions() }) do
+        if region and region:IsShown() then
+            local regionType = region:GetObjectType()
+            if regionType == "Texture" then
+                -- Check if it's a decorative texture (border, backdrop)
+                local tex = region:GetTexture()
+                if tex and (tex:match("Border") or tex:match("Overlay") or tex:match("Background")) then
+                    hiddenMinimapChildren[region] = true
+                    region:Hide()
+                end
+            end
+        end
+    end
+end
+
+local function RestoreMinimapChildren()
+    for obj in pairs(hiddenMinimapChildren) do
+        if obj and obj.Show then
+            obj:Show()
+        end
+    end
+    wipe(hiddenMinimapChildren)
+end
+
 local function RestoreMinimapState()
     -- Only restore if state was actually saved
     if not originalMinimapParent then
@@ -592,6 +637,9 @@ local function OnShow()
     -- Reparent Minimap to our HUD container
     Minimap:SetParent(FarmHudMapCluster)
 
+    -- Hide ElvUI elements and other minimap children that shouldn't show on HUD
+    HideMinimapChildren()
+
     -- Make minimap background transparent (only show pins)
     Minimap:SetAlpha(0)
 
@@ -633,6 +681,9 @@ local function OnHide()
 
     -- Restore addon pins
     RestoreAddonPins()
+
+    -- Restore ElvUI elements and other minimap children
+    RestoreMinimapChildren()
 
     -- Restore minimap state (parent, position, scale, alpha)
     RestoreMinimapState()
