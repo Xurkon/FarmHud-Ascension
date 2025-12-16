@@ -1,5 +1,13 @@
 # FarmHud Changelog
 
+## [2.0.5] - 2025-12-15
+
+### Bug Fixes
+
+- **Fixed TrailPath pins not appearing on HUD** - Pins were parented to wrong frame (FarmHud XML frame instead of FarmHudMapCluster container)
+
+---
+
 ## [2.0.4] - 2025-12-15
 
 ### Bug Fixes

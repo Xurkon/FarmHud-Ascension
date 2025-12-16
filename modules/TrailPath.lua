@@ -10,7 +10,7 @@ local EnableMouse, SetShown
 local media = "Interface\\AddOns\\FarmHud\\media\\";
 local minDistanceBetween = 12;
 local trailPathActive, trailPathPool, lastX, lastY, lastM, lastFacing, IsOpened = {}, {}, nil, nil, nil, nil, nil;
-local trailPathUpdateFrame = CreateFrame("Frame", "FarmHudTrailPathUpdateFrame", FarmHud);
+local trailPathUpdateFrame = CreateFrame("Frame", "FarmHudTrailPathUpdateFrame", FarmHudMapCluster);
 trailPathUpdateFrame:Hide();
 
 local maxYards = 40 / 0.2047; -- 195.4 yards visibility radius to screen edge
@@ -258,7 +258,7 @@ function FarmHudTrailPathPinMixin:UpdateManual(px, py, pInst, pFacing)
 	local screenYardsY = -deltaYardsY
 
 	-- Convert yards to HUD pixels using maxYards (HUD visibility range)
-	local hudRadius = FarmHud:GetHeight() / 2
+	local hudRadius = FarmHudMapCluster:GetHeight() / 2
 	local yardsToPixels = hudRadius / maxYards
 
 	local pixelX = screenYardsX * yardsToPixels
@@ -285,7 +285,7 @@ function FarmHudTrailPathPinMixin:UpdateManual(px, py, pInst, pFacing)
 
 	self:Show()
 	self:ClearAllPoints()
-	self:SetPoint("CENTER", FarmHud, "CENTER", sx, sy)
+	self:SetPoint("CENTER", FarmHudMapCluster, "CENTER", sx, sy)
 
 	self:UpdatePin(pFacing, true)
 end
@@ -295,7 +295,7 @@ local function GetMicrotime()
 end
 
 trailPathUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
-	if not FarmHud:IsShown() then
+	if not FarmHudMapCluster:IsShown() then
 		-- Ensure frame stays visible for next check, but don't update
 		return
 	end
@@ -444,7 +444,7 @@ local function TrailPath_TickerFunc()
 			-- Manual Mode: Do NOT register with HBDPins Minimap.
 			-- Add to manual list is implicit (trailPathActive).
 			-- Ensure it's parented to FarmHud for drawing
-			entry:SetParent(FarmHud)
+			entry:SetParent(FarmHudMapCluster)
 			-- Position will be set by OnUpdate next frame
 		else
 			-- Standard Mode: Register with HBDPins Minimap
@@ -717,7 +717,7 @@ function module.OnShow()
 	-- Remove pins from HBD Minimap ONLY
 	for _, pin in ipairs(trailPathActive) do
 		HBDPins:RemoveMinimapIcon(FarmHud, pin)
-		pin:SetParent(FarmHud) -- Ensure it's on the HUD frame
+		pin:SetParent(FarmHudMapCluster) -- Ensure it's on the HUD frame
 		pin:Show()
 	end
 end
