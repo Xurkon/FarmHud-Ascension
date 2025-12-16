@@ -28,11 +28,9 @@ local MAP_SCALE = 1000  -- Arbitrary scale for precision
 -- IMPORTANT: Must call SetMapToCurrentZone() first in 3.3.5a to get fresh position data
 -- BUT only when FarmHud is visible and world map is not (to avoid interfering with normal minimap)
 function HereBeDragons:GetPlayerWorldPosition()
-    -- Only refresh map when:
-    -- 1. FarmHud is visible (we need accurate position for HUD display)
-    -- 2. World map is not open (to not interfere with user zooming)
-    -- When FarmHud is hidden, we don't need fresh position data and shouldn't interfere with minimap
-    if FarmHud and FarmHud:IsVisible() and (not WorldMapFrame or not WorldMapFrame:IsVisible()) then
+    -- Always refresh map when world map is not open
+    -- This ensures minimap pins have accurate position data
+    if not WorldMapFrame or not WorldMapFrame:IsVisible() then
         SetMapToCurrentZone()
     end
     local x, y = GetPlayerMapPosition("player")
