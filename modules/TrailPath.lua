@@ -41,6 +41,61 @@ local TrailPathIconValues = {
 	ring2 = L["Ring 2"],
 }
 
+-- Helper to fix 3.3.5a parentKey incompatibility
+-- Manually sets up entry.pin, entry.pin.icon, entry.pin.Facing from child frames
+local function SetupPinStructure(entry)
+	-- Get child frames (the pin frame is the first child)
+	local children = { entry:GetChildren() }
+	if children[1] then
+		entry.pin = children[1]
+		-- Get the icon texture from the pin's regions
+		local regions = { entry.pin:GetRegions() }
+		for _, region in ipairs(regions) do
+			if region:IsObjectType("Texture") then
+				entry.pin.icon = region
+				break
+			end
+		end
+		-- Get the Facing animation group - 3.3.5a stores animations differently
+		-- Try GetAnimationGroups if available, otherwise check for named children
+		if entry.pin.GetAnimationGroups then
+			local animGroups = { entry.pin:GetAnimationGroups() }
+			if animGroups[1] then
+				entry.pin.Facing = animGroups[1]
+				-- Get the Rotate animation from the animation group
+				local animations = animGroups[1].GetAnimations and { animGroups[1]:GetAnimations() } or {}
+				if animations[1] then
+					entry.pin.Facing.Rotate = animations[1]
+				end
+			end
+		end
+		-- Ensure the pin and icon are shown
+		entry.pin:Show()
+		if entry.pin.icon then
+			entry.pin.icon:Show()
+		end
+	end
+
+	-- If no child frame found, create pin structure manually
+	if not entry.pin then
+		entry.pin = CreateFrame("Frame", nil, entry)
+		entry.pin:SetAllPoints(entry)
+		entry.pin.icon = entry.pin:CreateTexture(nil, "OVERLAY")
+		entry.pin.icon:SetAllPoints(entry.pin)
+		entry.pin.icon:SetTexture("Interface\\Minimap\\Minimap-Blip-Small")
+		entry.pin:Show()
+		entry.pin.icon:Show()
+	end
+
+	-- Ensure icon exists
+	if not entry.pin.icon then
+		entry.pin.icon = entry.pin:CreateTexture(nil, "OVERLAY")
+		entry.pin.icon:SetAllPoints(entry.pin)
+		entry.pin.icon:SetTexture("Interface\\Minimap\\Minimap-Blip-Small")
+		entry.pin.icon:Show()
+	end
+end
+
 FarmHudTrailPathPinMixin = {}
 
 local function UpdateVisibility(self)
@@ -295,22 +350,27 @@ local function TrailPath_TickerFunc()
 			tremove(trailPathPool, 1);
 		else
 			entry = CreateFrame("Frame", nil, nil, "FarmHudTrailPathPinTemplate");
+			SetupPinStructure(entry); -- Fix 3.3.5a parentKey incompatibility
 			ns.Mixin(entry, FarmHudTrailPathPinMixin);
 			entry.info = {};
-			entry.pin.Facing:Play();
+			-- Safely play animation if it exists
+			if entry.pin and entry.pin.Facing and entry.pin.Facing.Play then
+				entry.pin.Facing:Play();
+			end
 			entry:EnableMouse(false);
 
-			-- Create MapPin for World Map (Shared Pin Template?)
+			-- Create MapPin for World Map
 			entry.mapPin = CreateFrame("Frame", nil, nil, "FarmHudTrailPathPinTemplate")
+			SetupPinStructure(entry.mapPin); -- Fix 3.3.5a parentKey incompatibility
 			ns.Mixin(entry.mapPin, FarmHudTrailPathPinMixin)
 			entry.mapPin.info = {}
 			entry.mapPin:EnableMouse(false)
 			entry.mapPin.isWorldMapPin = true -- Mark as world map pin for visibility logic
-			-- Ensure mapPin has proper structure
-			if entry.mapPin.pin and entry.mapPin.pin.Facing then
+			-- Safely play animation if it exists
+			if entry.mapPin.pin and entry.mapPin.pin.Facing and entry.mapPin.pin.Facing.Play then
 				entry.mapPin.pin.Facing:Play()
 			end
-			-- Ensure mapPin is visible and has proper size
+			-- Ensure mapPin is visible
 			entry.mapPin:Show()
 			if entry.mapPin.pin then
 				entry.mapPin.pin:Show()
@@ -598,18 +658,46 @@ end
 function module.UpdateOptions(key, value)
 	if key == "trailPathShow" then
 		UpdateTrailPath(value);
-	elseif key == "trailPathIcon" or key == "trailPathColor1" then
-		-- Force update all pins when icon or color changes
+	elseif key == "trailPathOnMinimap" then
+		-- Re-trigger OnShow/OnHide logic based on current HUD state
+		if FarmHud:IsShown() then
+			module.OnShow()
+		else
+			module.OnHide()
+		end
+	elseif key == "trailPathIcon" or key == "trailPathColor1" or key == "trailPathScale" then
+		-- Force update all pins when icon, color, or scale changes
+		local scale = FarmHudDB.trailPathScale or 1
 		for _, pin in ipairs(trailPathActive) do
 			if pin then
 				local HUD = FarmHud:IsShown();
 				local IsOnCluster = HUD or (not HUD and FarmHudDB.trailPathOnMinimap);
+				-- Update scale
+				local baseSize = 20
+				pin:SetWidth(baseSize * scale)
+				pin:SetHeight(baseSize * scale)
+				if pin.pin then
+					pin.pin:SetWidth(baseSize * scale)
+					pin.pin:SetHeight(baseSize * scale)
+				end
+				-- Force texture update
+				if pin.info then pin.info.currentPinIcon = nil end
 				pin:UpdatePin(GetPlayerFacing() or 0, IsOnCluster);
 			end
-			if pin.mapPin then
+			if pin and pin.mapPin then
+				-- Update scale for map pin
+				local baseSize = 20
+				pin.mapPin:SetWidth(baseSize * scale)
+				pin.mapPin:SetHeight(baseSize * scale)
+				if pin.mapPin.pin then
+					pin.mapPin.pin:SetWidth(baseSize * scale)
+					pin.mapPin.pin:SetHeight(baseSize * scale)
+				end
+				if pin.mapPin.info then pin.mapPin.info.currentPinIcon = nil end
 				pin.mapPin:UpdatePin(GetPlayerFacing() or 0, false);
 			end
 		end
+	-- trailPathCount and trailPathTimeout are read dynamically, no immediate action needed
 	end
 end
 

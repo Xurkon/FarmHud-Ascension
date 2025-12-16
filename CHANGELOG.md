@@ -1,5 +1,16 @@
 # FarmHud Changelog
 
+## [2.0.4] - 2025-12-15
+
+### Bug Fixes
+
+- **Fixed TrailPath module display** - Pins now show on HUD, minimap, and world map
+- **Fixed 3.3.5a parentKey incompatibility** - Added SetupPinStructure helper to manually assign pin structure
+- **Fixed all TrailPath options** - Scale, icon, color, minimap toggle, count, and timeout now work correctly
+- Safe animation access to prevent errors when pin.Facing animation is missing
+
+---
+
 ## [2.0.3] - 2025-12-15
 
 ### New Features
