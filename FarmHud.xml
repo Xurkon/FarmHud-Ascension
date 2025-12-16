@@ -1,4 +1,5 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
 
 	<!-- Scripts moved to TOC for better compatibility
@@ -77,11 +78,11 @@
 				</Animations>
 			</Frame>
 		</Frames>
-        <Scripts>
-            <!-- Mixin functions need to be called on relevant events if they existed. 
+		<Scripts>
+			<!-- Mixin functions need to be called on relevant events if they existed. 
                  The original had no scripts block here, so maybe it was just defining the frame structure.
                  Check Lua for FarmHudTrailPathPinMixin usage. -->
-        </Scripts>
+		</Scripts>
 	</Frame>
 
 	<Frame name="FarmHudCircleLineTemplate" virtual="true">
@@ -91,16 +92,8 @@
 		</Anchors>
 	</Frame>
 
-	<Frame name="FarmHudRangeCircles">
-        <Scripts>
-            <!-- Check FarmHudRangeCirclesMixin for events -->
-            <OnLoad>
-                if FarmHudRangeCirclesMixin and FarmHudRangeCirclesMixin.OnLoad then
-                    FarmHudRangeCirclesMixin.OnLoad(self)
-                end
-            </OnLoad>
-        </Scripts>
-    </Frame>
+	<!-- Old RangeCircles frame - hidden, functionality moved to FarmHud.lua -->
+	<Frame name="FarmHudRangeCircles" hidden="true" />
 
 	<Frame name="FarmHud" parent="UIParent" frameStrata="BACKGROUND" alpha="1" hidden="true">
 		<Size x="140" y="140"/>
@@ -167,18 +160,18 @@
 			<Frame parentKey="HideElements" hidden="true" />
 		</Frames>
 		<Scripts>
-            <OnLoad>
+			<OnLoad>
                 FarmHudMixin.OnLoad(self);
-            </OnLoad>
-            <OnEvent>
+			</OnLoad>
+			<OnEvent>
                 FarmHudMixin.OnEvent(self, event, ...);
-            </OnEvent>
-            <OnShow>
+			</OnEvent>
+			<OnShow>
                 FarmHudMixin.OnShow(self);
-            </OnShow>
-            <OnHide>
+			</OnShow>
+			<OnHide>
                 FarmHudMixin.OnHide(self);
-            </OnHide>
+			</OnHide>
 		</Scripts>
 	</Frame>
 

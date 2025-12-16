@@ -1,5 +1,24 @@
 # FarmHud Changelog
 
+## [2.0.1] - 2025-12-15
+
+### Bug Fixes
+
+- **Fixed duplicate inner circle** - Removed hardcoded gatherCircle texture (SPELLS\CIRCLE.BLP) that was always visible regardless of Range Circles settings
+- **Fixed CardinalPoints module** - Created FarmHud.TextFrame wrapper for 3.3.5a compatibility since XML parentKey/parentArray don't work
+- **Fixed ElvUI compatibility** - Wrapped Minimap:SetZoom in pcall to prevent resetZoom nil errors
+- **Fixed XML/Lua load order** - Created FarmHud_Mixins.lua to ensure mixin stubs exist before XML loads
+- **Fixed nil reference errors** - Added nil checks throughout CardinalPoints module
+
+### Technical Changes
+
+- New file: `FarmHud_Mixins.lua` - Contains mixin stubs for XML scripts
+- Updated TOC load order: Mixins → XML → FarmHud.lua
+- FarmHud.lua now references XML-defined FarmHud frame instead of creating duplicate
+- Added rot/NWSE properties to cardinal direction font strings
+
+---
+
 ## [2.0.0] - 2025-12-15
 
 **Complete Rewrite** - Taint-free implementation for Project Ascension

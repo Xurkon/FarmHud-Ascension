@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: FarmHud
-## Version: 2.0.0
+## Version: 2.0.1
 ## Notes: Turns your minimap into a HUD for gathering resources! Taint-free for Project Ascension.
 ## Author: Xurkon
 ## OptionalDeps: Ace3, CallbackHandler-1.0, LibDBIcon-1.0, LibStub, HereBeDragons
@@ -19,11 +19,12 @@ libs\LibColors-1.0\LibColors-1.0.xml
 libs\HizurosSharedTools\HizurosSharedTools.lua
 
 Localization.lua
+FarmHud_Mixins.lua
+FarmHud.xml
 FarmHud.lua
 FarmHud_Options.lua
 FarmHud_DataBroker.lua
-FarmHud.xml
 
 modules\CardinalPoints.lua
-modules\TrailPath.lua
-modules\RangeCircles.lua
+#modules\TrailPath.lua
+#modules\RangeCircles.lua

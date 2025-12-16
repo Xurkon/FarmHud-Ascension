@@ -8,25 +8,13 @@
 local addon, ns = ...
 ns.L = ns.L or setmetatable({}, { __index = function(t, k) return k end }) -- Localization fallback
 
-local FarmHud = CreateFrame("Frame", addon, UIParent)
-_G[addon] = FarmHud
+-- Reference the XML-defined FarmHud frame (don't create new - that overwrites it!)
+-- The XML frame has cluster and TextFrame children we need
+local FarmHud = _G.FarmHud or CreateFrame("Frame", addon, UIParent)
 ns.FarmHud = FarmHud
 
--- FarmHudMixin for XML compatibility
-FarmHudMixin = {}
-function FarmHudMixin.OnLoad(self) end
-
-function FarmHudMixin.OnEvent(self, event, ...) end
-
-function FarmHudMixin.OnShow(self) end
-
-function FarmHudMixin.OnHide(self) end
-
--- FarmHudMinimapDummyMixin for XML
-FarmHudMinimapDummyMixin = {}
-function FarmHudMinimapDummyMixin.OnMouseUp(self) end
-
-function FarmHudMinimapDummyMixin.OnMouseDown(self) end
+-- Note: FarmHudMixin and FarmHudMinimapDummyMixin are defined in FarmHud_Mixins.lua
+-- which loads before this file to prevent nil errors in XML scripts
 
 -- Mixin function for module compatibility
 ns.Mixin = function(object, mixin)
@@ -43,6 +31,8 @@ ns.SetShown = function(f, s) if f then if s then f:Show() else f:Hide() end end 
 ns.IsClassic = function() return false end
 ns.IsRetail = function() return false end
 ns.IsDragonFlight = function() return false end
+ns.GetContinentID = function() return 0 end -- Stub for 3.3.5a
+ns.debugPrint = function() end              -- Debug print stub
 
 -- C_AddOns polyfill for 3.3.5a
 C_AddOns = C_AddOns or {}
@@ -88,6 +78,67 @@ playerArrowFrame:SetPoint("CENTER", FarmHudMapCluster, "CENTER", 0, 0)
 local playerArrowTexture = playerArrowFrame:CreateTexture(nil, "OVERLAY")
 playerArrowTexture:SetAllPoints(playerArrowFrame)
 playerArrowTexture:SetTexture("Interface\\Minimap\\MinimapArrow")
+
+-------------------------------------------------------------------------------
+-- Range Circles (dynamic add/remove support)
+-- Uses media/gathercircle.tga texture for each circle
+-------------------------------------------------------------------------------
+local rangeCircleFrames = {} -- Store circle frames
+
+-- Create or update a single range circle frame
+local function CreateRangeCircleFrame(index)
+    if rangeCircleFrames[index] then return rangeCircleFrames[index] end
+
+    local frame = CreateFrame("Frame", "FarmHudRangeCircle" .. index, FarmHudMapCluster)
+    frame:SetFrameStrata("LOW")
+    frame:SetPoint("CENTER", FarmHudMapCluster, "CENTER", 0, 0)
+    frame:Hide() -- Start hidden, UpdateRangeCircles will show if needed
+
+    local texture = frame:CreateTexture(nil, "ARTWORK")
+    texture:SetTexture("Interface\\AddOns\\FarmHud\\media\\gathercircle")
+    texture:SetAllPoints(frame)
+    texture:SetVertexColor(0, 1, 0, 0.5)
+
+    frame.texture = texture
+    rangeCircleFrames[index] = frame
+    return frame
+end
+
+-- Update all range circles based on settings
+local function UpdateRangeCircles()
+    if not FarmHudMapCluster:IsShown() then return end
+    if not FarmHudDB or not FarmHudDB.rangeCircles then return end
+
+    local hudSize = FarmHudMapCluster:GetWidth()
+    if hudSize <= 0 then hudSize = 500 end
+
+    -- Hide all existing circles first
+    for _, frame in pairs(rangeCircleFrames) do
+        frame:Hide()
+    end
+
+    -- Show and update configured circles
+    for i, settings in ipairs(FarmHudDB.rangeCircles) do
+        if settings.show then
+            local frame = CreateRangeCircleFrame(i)
+            local circleSize = hudSize * (settings.scale or 0.45)
+            frame:SetSize(circleSize, circleSize)
+            frame.texture:SetVertexColor(
+                settings.r or 0,
+                settings.g or 1,
+                settings.b or 0,
+                settings.a or 0.5
+            )
+            frame:Show()
+        end
+    end
+end
+
+-- Store update function for later use
+FarmHud.UpdateRangeCircles = UpdateRangeCircles
+-- Backwards compatibility
+FarmHud.UpdateGatherCircle = UpdateRangeCircles
+
 
 -------------------------------------------------------------------------------
 -- Libraries
@@ -414,9 +465,9 @@ local function RestoreMinimapState()
         Minimap:SetAlpha(originalMinimapAlpha)
     end
 
-    -- Restore zoom
+    -- Restore zoom (wrapped in pcall for ElvUI compatibility)
     if originalMinimapZoom then
-        Minimap:SetZoom(originalMinimapZoom)
+        pcall(function() Minimap:SetZoom(originalMinimapZoom) end)
     end
 end
 
@@ -569,6 +620,11 @@ local function OnShow()
 
     -- Apply player dot setting
     FarmHud:UpdateOptions("player_dot")
+
+    -- Update gather circle
+    if FarmHud.UpdateGatherCircle then
+        FarmHud.UpdateGatherCircle()
+    end
 end
 
 local function OnHide()
@@ -861,12 +917,8 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateHUDElements()
-    -- Gather circle (attached to FarmHudMapCluster, not Minimap)
-    gatherCircle = FarmHudMapCluster:CreateTexture(nil, "OVERLAY")
-    gatherCircle:SetTexture([[SPELLS\CIRCLE.BLP]])
-    gatherCircle:SetBlendMode("ADD")
-    gatherCircle:SetPoint("CENTER")
-    gatherCircle:SetVertexColor(0, 1, 0, 0.7)
+    -- Note: Range circles are now managed by UpdateRangeCircles() function
+    -- The old gatherCircle texture has been removed to prevent duplicate circles
 
     -- Player dot
     playerDot = FarmHudMapCluster:CreateTexture(nil, "OVERLAY")
@@ -884,7 +936,10 @@ local function CreateHUDElements()
         dir:SetText(text)
         dir:SetShadowOffset(0.2, -0.2)
         dir.rad = rot
+        dir.rot = rot -- CardinalPoints module expects this
         dir.radius = radius
+        -- Mark N/E/S/W vs NE/SE/SW/NW for coloring
+        dir.NWSE = (text == "N" or text == "E" or text == "S" or text == "W")
         table.insert(directions, dir)
     end
 
@@ -893,6 +948,20 @@ local function CreateHUDElements()
     mouseWarn:SetPoint("CENTER", FarmHudMapCluster, "CENTER", 0, 50)
     mouseWarn:SetText("MOUSE ON")
     mouseWarn:Hide()
+
+    -- Create FarmHud.TextFrame for CardinalPoints module compatibility
+    -- The XML parentKey doesn't work in 3.3.5a so we create it manually
+    if not FarmHud.TextFrame then
+        FarmHud.TextFrame = CreateFrame("Frame", nil, FarmHud)
+        FarmHud.TextFrame:SetAllPoints()
+    end
+    FarmHud.TextFrame.cardinalPoints = directions
+    FarmHud.TextFrame.ScaledHeight = UIParent:GetHeight() / (FarmHudDB.text_scale or 1)
+
+    -- Also expose cluster frame for compatibility
+    if not FarmHud.cluster then
+        FarmHud.cluster = FarmHudMapCluster
+    end
 end
 
 -------------------------------------------------------------------------------

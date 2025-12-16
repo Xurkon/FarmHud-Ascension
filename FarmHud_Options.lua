@@ -1,4 +1,3 @@
-
 local addon, ns = ...;
 local L = ns.L;
 local playerDot_textures = {
@@ -15,31 +14,58 @@ local TrackingValues = {
 	["client"] = L["TrackingOptionsLikeMinimap"]
 }
 local dbDefaults = {
-	hud_scale=1.4, text_scale=1.4, hud_size=1,
-	cardinalpoints_show=true,cardinalpoints_color1={1,0.82,0,0.7},cardinalpoints_color2={1,0.82,0,0.7},cardinalpoints_radius=0.47,
-	coords_show=true,coords_bottom=false,coords_color={1,0.82,0,0.7},coords_radius=0.51,
-	buttons_show=false,buttons_buttom=false,buttons_alpha=0.6,buttons_radius=0.56,
-	time_show=true, time_server=true, time_local=true, time_radius = 0.48, time_bottom=false, time_color={1,0.82,0,0.7},
-	mouseoverinfo_color={1,0.82,0,0.7},
-	player_dot="blizz", holdKeyForMouseOn = "_none",
-	rotation=true, SuperTrackedQuest = true, showDummy = true, showDummyBg = true,
+	hud_scale = 1.4,
+	text_scale = 1.4,
+	hud_size = 1,
+	cardinalpoints_show = true,
+	cardinalpoints_color1 = { 1, 0.82, 0, 0.7 },
+	cardinalpoints_color2 = { 1, 0.82, 0, 0.7 },
+	cardinalpoints_radius = 0.47,
+	coords_show = true,
+	coords_bottom = false,
+	coords_color = { 1, 0.82, 0, 0.7 },
+	coords_radius = 0.51,
+	buttons_show = false,
+	buttons_buttom = false,
+	buttons_alpha = 0.6,
+	buttons_radius = 0.56,
+	time_show = true,
+	time_server = true,
+	time_local = true,
+	time_radius = 0.48,
+	time_bottom = false,
+	time_color = { 1, 0.82, 0, 0.7 },
+	mouseoverinfo_color = { 1, 0.82, 0, 0.7 },
+	player_dot = "blizz",
+	holdKeyForMouseOn = "_none",
+	rotation = true,
+	SuperTrackedQuest = true,
+	showDummy = true,
+	showDummyBg = true,
 	QuestArrowInfoMsg = false,
-	hideInInstance=false, hideInCombat=false,
-	background_alpha=0, background_alpha2=0.5, background_alpha_toggle=true, background_alpha_default=true,
+	hideInInstance = false,
+	hideInCombat = false,
+	background_alpha = 0,
+	background_alpha2 = 0.5,
+	background_alpha_toggle = true,
+	background_alpha_default = true,
+	rangeCircles = {
+		{ name = "Gather", show = true, scale = 0.45, r = 0, g = 1, b = 0, a = 0.5 },
+	},
 }
 local modDB = {};
 local excludeFrames = {}
 local isAddOnsLoadedForOption = {
 	SuperTrackedQuest = {
-		addon="FarmHud_QuestArrow",
-		descLoaded=GREEN_FONT_COLOR_CODE..L["ExtraAddOnLoaded"]:format("FarmHud [QuestArrow]").."|r",
-		descNotLoaded=ORANGE_FONT_COLOR_CODE..L["ExtraAddOnNotLoaded"]:format("FarmHud [QuestArrow]").."|r"
+		addon = "FarmHud_QuestArrow",
+		descLoaded = GREEN_FONT_COLOR_CODE .. L["ExtraAddOnLoaded"]:format("FarmHud [QuestArrow]") .. "|r",
+		descNotLoaded = ORANGE_FONT_COLOR_CODE .. L["ExtraAddOnNotLoaded"]:format("FarmHud [QuestArrow]") .. "|r"
 	}
 }
 
-local function printFrames(key,value)
+local function printFrames(key, value)
 	local keyType = type(key);
-	if keyType=="table" then
+	if keyType == "table" then
 		if not FarmHud:IsVisible() then
 			ns:print("FarmHud must be enabled before use this option");
 			return;
@@ -47,29 +73,29 @@ local function printFrames(key,value)
 
 		ns:print("Search for unwanted elements anchored on minimap...");
 		local count = 0;
-		local regions = {Minimap:GetRegions()};
-		for r=1, #regions do
-			print("GetRegions()"," - ",regions[r]:GetDebugName());
+		local regions = { Minimap:GetRegions() };
+		for r = 1, #regions do
+			print("GetRegions()", " - ", regions[r]:GetDebugName());
 			count = count + 1;
 		end
 
 		--ns:print("Search for unwanted frames anchored on minimap... (deep reverse search)");
-		for k,v in pairs(_G) do
-			if not (issecurevariable(_G,k)) and (not excludeFrames[key]) and (type(value)=="table") and (type(value[0])=="userdata") and (not (value:IsProtected() or value:IsForbidden())) then
-				if printFrames(k,v) then
+		for k, v in pairs(_G) do
+			if not (issecurevariable(_G, k)) and (not excludeFrames[key]) and (type(value) == "table") and (type(value[0]) == "userdata") and (not (value:IsProtected() or value:IsForbidden())) then
+				if printFrames(k, v) then
 					count = count + 1;
 				end
 			end
 		end
 
 		--ns:print("Search for unwanted textures/fontstrings anchored on minimap...");
-		local childs = {Minimap:GetChildren()};
-		for i=1, #childs do
-			print("GetChildren()"," - ",childs[i]:GetDebugName());
+		local childs = { Minimap:GetChildren() };
+		for i = 1, #childs do
+			print("GetChildren()", " - ", childs[i]:GetDebugName());
 			count = count + 1;
 		end
 
-		if count>0 then
+		if count > 0 then
 			ns:print("Finished...");
 		else
 			ns:print("No elements found...");
@@ -77,39 +103,39 @@ local function printFrames(key,value)
 		return;
 	end
 
-	for i=1, value:GetNumPoints() do
-		local _,parent = value:GetPoint(i);
-		if parent==Minimap then
-			print("pairs(_G)"," - ",value:GetDebugName());
+	for i = 1, value:GetNumPoints() do
+		local _, parent = value:GetPoint(i);
+		if parent == Minimap then
+			print("pairs(_G)", " - ", value:GetDebugName());
 			return true;
 		end
 	end
 end
 
 local function checkAddOnLoaded(info)
-	local key,pKey = info[#info],info[#info-1];
+	local key, pKey = info[#info], info[#info - 1];
 	if isAddOnsLoadedForOption[key] then
 		return not C_AddOns.IsAddOnLoaded(isAddOnsLoadedForOption[key].addon);
 	elseif isAddOnsLoadedForOption[pKey] then
 		local isLoaded = C_AddOns.IsAddOnLoaded(isAddOnsLoadedForOption[pKey].addon) and "Loaded" or "NotLoaded";
-		if isAddOnsLoadedForOption[pKey][key..isLoaded] then
-			return isAddOnsLoadedForOption[pKey][key..isLoaded];
+		if isAddOnsLoadedForOption[pKey][key .. isLoaded] then
+			return isAddOnsLoadedForOption[pKey][key .. isLoaded];
 		elseif isAddOnsLoadedForOption[pKey][key] then
 			return isAddOnsLoadedForOption[pKey][key];
 		end
 	end
 end
 
-local function opt(info,value,...)
-	local key,reset = info[#info],info[#info]:gsub("reset","");
-	if key~=reset then
-		if dbDefaults[reset]~=nil then
-			FarmHudDB[reset] = type(dbDefaults[reset])=="table" and CopyTable(dbDefaults[reset]) or dbDefaults[reset];
+local function opt(info, value, ...)
+	local key, reset = info[#info], info[#info]:gsub("reset", "");
+	if key ~= reset then
+		if dbDefaults[reset] ~= nil then
+			FarmHudDB[reset] = type(dbDefaults[reset]) == "table" and CopyTable(dbDefaults[reset]) or dbDefaults[reset];
 			FarmHud:UpdateOptions(reset);
 		end
 		return;
-	elseif value~=nil then
-		if key=="MinimapIcon" then
+	elseif value ~= nil then
+		if key == "MinimapIcon" then
 			FarmHudDB[key].hide = not value;
 			if value then
 				LibStub("LibDBIcon-1.0", true):Show(addon);
@@ -118,32 +144,32 @@ local function opt(info,value,...)
 			end
 		else
 			if (...) then
-				value = {value,...}; -- color table
+				value = { value, ... }; -- color table
 			end
 			FarmHudDB[key] = value;
 		end
 		if modDB[key] and ns.modules[modDB[key]] then
-			ns.modules[modDB[key]].UpdateOptions(key,value)
+			ns.modules[modDB[key]].UpdateOptions(key, value)
 		else
 			FarmHud:UpdateOptions(key);
 		end
 		return;
-	elseif key=="MinimapIcon" then
+	elseif key == "MinimapIcon" then
 		return not FarmHudDB[key].hide;
-	elseif type(FarmHudDB[key])=="table" then
+	elseif type(FarmHudDB[key]) == "table" then
 		return unpack(FarmHudDB[key]); -- color table
 	end
 	return FarmHudDB[key];
 end
 
-local function optKeyBind(info,value)
+local function optKeyBind(info, value)
 	local key = info[#info];
-	if value~=nil then
+	if value ~= nil then
 		local valueB = GetBindingKey(key);
 		if valueB then
 			SetBinding(valueB);
 		end
-		if value~="" then
+		if value ~= "" then
 			SetBinding(value, key);
 		end
 		SaveBindings(GetCurrentBindingSet());
@@ -151,11 +177,11 @@ local function optKeyBind(info,value)
 	return GetBindingKey(key);
 end
 
-local function optTracking(info,value)
+local function optTracking(info, value)
 	local key = info[#info];
 	if not key:find("^tracking^.+$") then return end
 
-	if value~=nil then
+	if value ~= nil then
 		FarmHudDB[key] = value;
 		FarmHud:UpdateOptions(key);
 		return;
@@ -163,7 +189,113 @@ local function optTracking(info,value)
 	return FarmHudDB[key];
 end
 
-local options = {
+-- Forward declaration for refresh function (defined after options table)
+local RefreshRangeCircleOptions
+
+-- Build dynamic options for each range circle
+local function BuildRangeCircleOptions()
+	local args = {}
+	if not FarmHudDB or not FarmHudDB.rangeCircles then return args end
+
+	for i, circle in ipairs(FarmHudDB.rangeCircles) do
+		local circleKey = "circle" .. i
+		args[circleKey] = {
+			type = "group",
+			order = i,
+			name = circle.name or ("Circle " .. i),
+			inline = true,
+			args = {
+				show = {
+					type = "toggle",
+					order = 1,
+					name = L["Show"] or SHOW,
+					get = function() return FarmHudDB.rangeCircles[i].show end,
+					set = function(_, value)
+						FarmHudDB.rangeCircles[i].show = value
+						if FarmHud.UpdateRangeCircles then FarmHud.UpdateRangeCircles() end
+					end
+				},
+				name = {
+					type = "input",
+					order = 2,
+					name = L["Name"] or NAME,
+					get = function() return FarmHudDB.rangeCircles[i].name or "" end,
+					set = function(_, value)
+						FarmHudDB.rangeCircles[i].name = value
+						LibStub("AceConfigRegistry-3.0"):NotifyChange("FarmHud")
+					end
+				},
+				scale = {
+					type = "range",
+					order = 3,
+					name = L["Scale"] or "Scale",
+					min = 0.1,
+					max = 1.5,
+					step = 0.05,
+					get = function() return FarmHudDB.rangeCircles[i].scale or 0.45 end,
+					set = function(_, value)
+						FarmHudDB.rangeCircles[i].scale = value
+						if FarmHud.UpdateRangeCircles then FarmHud.UpdateRangeCircles() end
+					end
+				},
+				color = {
+					type = "color",
+					order = 4,
+					name = COLOR,
+					hasAlpha = true,
+					get = function()
+						local c = FarmHudDB.rangeCircles[i]
+						return c.r or 0, c.g or 1, c.b or 0, c.a or 0.5
+					end,
+					set = function(_, r, g, b, a)
+						FarmHudDB.rangeCircles[i].r = r
+						FarmHudDB.rangeCircles[i].g = g
+						FarmHudDB.rangeCircles[i].b = b
+						FarmHudDB.rangeCircles[i].a = a
+						if FarmHud.UpdateRangeCircles then FarmHud.UpdateRangeCircles() end
+					end
+				},
+				remove = {
+					type = "execute",
+					order = 5,
+					name = L["Remove"] or REMOVE,
+					confirm = true,
+					confirmText = L["RemoveCircleConfirm"] or "Remove this circle?",
+					func = function()
+						table.remove(FarmHudDB.rangeCircles, i)
+						if FarmHud.UpdateRangeCircles then FarmHud.UpdateRangeCircles() end
+						RefreshRangeCircleOptions()
+						LibStub("AceConfigRegistry-3.0"):NotifyChange("FarmHud")
+					end
+				}
+			}
+		}
+	end
+	return args
+end
+
+-- Reference to options table for dynamic updates
+local options
+
+-- Refresh the range circle options
+RefreshRangeCircleOptions = function()
+	if not options or not options.args or not options.args.rangeCircles then return end
+
+	-- Remove old circle entries (keep desc and addCircle)
+	for key in pairs(options.args.rangeCircles.args) do
+		if key:match("^circle%d+$") then
+			options.args.rangeCircles.args[key] = nil
+		end
+	end
+
+	-- Add current circles
+	local circleOptions = BuildRangeCircleOptions()
+	for key, value in pairs(circleOptions) do
+		options.args.rangeCircles.args[key] = value
+	end
+end
+
+options = {
 	type = "group",
 	name = addon,
 	childGroups = "tree",
@@ -172,95 +304,137 @@ local options = {
 	func = opt,
 	args = {
 		general = {
-			type = "group", order = 0,
+			type = "group",
+			order = 0,
 			name = COMPACT_UNIT_FRAME_PROFILE_SUBTYPE_ALL,
 			args = {
 				MinimapIcon = {
-					type = "toggle", order = 1,
-					name = L["MinimapIcon"], desc = L["MinimapIconDesc"]
+					type = "toggle",
+					order = 1,
+					name = L["MinimapIcon"],
+					desc = L["MinimapIconDesc"]
 				},
 				AddOnLoaded = {
-					type = "toggle", order = 2,
-					name = L["AddOnLoaded"], desc = L["AddOnLoadedDesc"].."|n|n|cff44ff44"..L["AddOnLoadedDescAlt"].."|r"
+					type = "toggle",
+					order = 2,
+					name = L["AddOnLoaded"],
+					desc = L["AddOnLoadedDesc"] .. "|n|n|cff44ff44" .. L["AddOnLoadedDescAlt"] .. "|r"
 				},
 				rotation = {
-					type = "toggle", order = 3, width="full",
-					name = L["Rotation"], desc = L["RotationDesc"]
+					type = "toggle",
+					order = 3,
+					width = "full",
+					name = L["Rotation"],
+					desc = L["RotationDesc"]
 				},
 				hud_scale = {
-					type = "range", order = 11,
-					name = L["HudSymbolScale"], desc = L["HudSymbolScaleDesc"],
-					min = 1, max = 8.0, step = 0.1, isPercent = true
+					type = "range",
+					order = 11,
+					name = L["HudSymbolScale"],
+					desc = L["HudSymbolScaleDesc"],
+					min = 1,
+					max = 8.0,
+					step = 0.1,
+					isPercent = true
 				},
 				hud_size = {
-					type = "range", order = 12,
-					name = L["HudSize"], desc = L["HudSizeDesc"],
-					min = 0.1, max = 1, step = 0.1, isPercent = true
+					type = "range",
+					order = 12,
+					name = L["HudSize"],
+					desc = L["HudSizeDesc"],
+					min = 0.1,
+					max = 1,
+					step = 0.1,
+					isPercent = true
 				},
 				text_scale = {
-					type = "range", order = 13,
-					name = L["TextScale"], desc = L["TextScaleDesc"],
-					min = 1, max = 2.5, step = 0.1, isPercent = true
+					type = "range",
+					order = 13,
+					name = L["TextScale"],
+					desc = L["TextScaleDesc"],
+					min = 1,
+					max = 2.5,
+					step = 0.1,
+					isPercent = true
 				},
 				player_dot = {
-					type = "select", order = 15,
-					name = L["PlayerDot"], desc = L["PlayerDotDesc"],
+					type = "select",
+					order = 15,
+					name = L["PlayerDot"],
+					desc = L["PlayerDotDesc"],
 					values = playerDot_textures
 				},
 				autohide = {
-					type="group", order = 20, inline=true,
+					type = "group",
+					order = 20,
+					inline = true,
 					name = L["AutoHide"],
 					args = {
-						hideInInstance = {type="toggle", order=1, name=L["HideInInstance"], desc=L["HideInInstanceDesc"]},
-						hideInCombat = {type="toggle", order=2, name=L["hideInCombat"], desc=L["hideInCombatDesc"]},
+						hideInInstance = { type = "toggle", order = 1, name = L["HideInInstance"], desc = L["HideInInstanceDesc"] },
+						hideInCombat = { type = "toggle", order = 2, name = L["hideInCombat"], desc = L["hideInCombatDesc"] },
 					}
 				},
 				placeholder = {
-					type = "group", order = 98, inline = true,
+					type = "group",
+					order = 98,
+					inline = true,
 					name = L["Placeholder"],
 					args = {
 						desc = {
-							type = "description", order = 0, fontSize = "medium",
+							type = "description",
+							order = 0,
+							fontSize = "medium",
 							name = L["PlaceholderDesc"]
 						},
 						showDummy = {
-							type = "toggle", order = 1,
-							name = L["ShowPlaceholder"], desc = L["ShowPlaceholderDesc"]
+							type = "toggle",
+							order = 1,
+							name = L["ShowPlaceholder"],
+							desc = L["ShowPlaceholderDesc"]
 						},
 						showDummyBg = {
-							type = "toggle", order = 2,
-							name = L["ShowPlaceholderBg"], desc = L["ShowPlaceholderBgDesc"]
+							type = "toggle",
+							order = 2,
+							name = L["ShowPlaceholderBg"],
+							desc = L["ShowPlaceholderBgDesc"]
 						},
 					}
 				},
 				mouseover = {
-					type = "group", order = 99, inline=true,
+					type = "group",
+					order = 99,
+					inline = true,
 					name = L["MouseOver"],
 					args = {
 						holdKeyForMouseOn = {
-							type = "select", order = 3, width="double";
+							type = "select",
+							order = 3,
+							width = "double",
 							name = L["MouseOverOnHold"],
 							desc = L["MouseOverOnHoldDesc"],
 							values = {
-								["_NONE"] = NONE.."/"..ADDON_DISABLED,
-								A  = ALT_KEY,
-								AL = LALT_KEY_TEXT,
-								AR = RALT_KEY_TEXT,
-								C  = CTRL_KEY,
-								CL = LCTRL_KEY_TEXT,
-								CR = RCTRL_KEY_TEXT,
-								S  = SHIFT_KEY,
-								SL = LSHIFT_KEY_TEXT,
-								SR = RSHIFT_KEY_TEXT,
+								["_NONE"] = NONE .. "/" .. ADDON_DISABLED,
+								A         = ALT_KEY,
+								AL        = LALT_KEY_TEXT,
+								AR        = RALT_KEY_TEXT,
+								C         = CTRL_KEY,
+								CL        = LCTRL_KEY_TEXT,
+								CR        = RCTRL_KEY_TEXT,
+								S         = SHIFT_KEY,
+								SL        = LSHIFT_KEY_TEXT,
+								SR        = RSHIFT_KEY_TEXT,
 							}
 						},
 						mouseoverinfo_color = {
-							type = "color", order = 1,
-							name = COLOR, desc = L["MouseOverInfoColorDesc"],
+							type = "color",
+							order = 1,
+							name = COLOR,
+							desc = L["MouseOverInfoColorDesc"],
 							hasAlpha = true
 						},
 						mouseoverinfo_resetcolor = {
-							type = "execute", order = 2,
+							type = "execute",
+							order = 2,
 							name = L["ResetColor"], --desc = L["ResetColorDesc"]
 						},
 					}
@@ -269,211 +443,349 @@ local options = {
 		},
 		----------------------------------------------
 		background = {
-			type="group", order = 1,
-			name=L["BgMinimap"],
-			args={
+			type = "group",
+			order = 1,
+			name = L["BgMinimap"],
+			args = {
 				desc = {
-					type="description", order=0,
-					name=L["BgMinimapDesc"]
+					type = "description",
+					order = 0,
+					name = L["BgMinimapDesc"]
 				},
 				background_alpha = {
-					type = "range", order = 1,
-					name = L["BgTransparency1"], desc = L["BgTransparencyDesc1"],
-					min = 0.0, max = 1, step = 0.1, isPercent = true,
+					type = "range",
+					order = 1,
+					name = L["BgTransparency1"],
+					desc = L["BgTransparencyDesc1"],
+					min = 0.0,
+					max = 1,
+					step = 0.1,
+					isPercent = true,
 					get = function()
-						return 1-FarmHudDB.background_alpha
+						return 1 - FarmHudDB.background_alpha
 					end,
-					set = function(info,value)
-						FarmHudDB.background_alpha = 1-value;
+					set = function(info, value)
+						FarmHudDB.background_alpha = 1 - value;
 						FarmHud:UpdateOptions("background_alpha");
 					end
 				},
 				background_alpha2 = {
-					type = "range", order = 2,
-					name = L["BgTransparency2"], desc = L["BgTransparencyDesc2"],
-					min = 0.0, max = 1, step = 0.1, isPercent = true,
+					type = "range",
+					order = 2,
+					name = L["BgTransparency2"],
+					desc = L["BgTransparencyDesc2"],
+					min = 0.0,
+					max = 1,
+					step = 0.1,
+					isPercent = true,
 					get = function()
-						return 1-FarmHudDB.background_alpha2
+						return 1 - FarmHudDB.background_alpha2
 					end,
-					set = function(info,value)
-						FarmHudDB.background_alpha2 = 1-value;
+					set = function(info, value)
+						FarmHudDB.background_alpha2 = 1 - value;
 						FarmHud:UpdateOptions("background_alpha2");
 					end
 				},
 				background_alpha_default = {
-					type = "toggle", order = 4,
+					type = "toggle",
+					order = 4,
 					name = L["BgAlphaDefault"],
 					desc = L["BgAlphaDefaultDesc"]
 				}
 			}
 		},
+		----------------------------------------------
+		rangeCircles = {
+			type = "group",
+			order = 2,
+			name = L["RangeCircles"] or "Range Circles",
+			args = {
+				desc = {
+					type = "description",
+					order = 0,
+					name = L["RangeCirclesDesc"] or "Add and configure range circles on the HUD."
+				},
+				addCircle = {
+					type = "execute",
+					order = 1,
+					name = L["AddCircle"] or "Add Circle",
+					desc = L["AddCircleDesc"] or "Add a new range circle",
+					func = function()
+						if not FarmHudDB.rangeCircles then FarmHudDB.rangeCircles = {} end
+						local num = #FarmHudDB.rangeCircles + 1
+						table.insert(FarmHudDB.rangeCircles, {
+							name = "Circle " .. num,
+							show = true,
+							scale = 0.45,
+							r = 0,
+							g = 1,
+							b = 0,
+							a = 0.5
+						})
+						if FarmHud.UpdateRangeCircles then FarmHud.UpdateRangeCircles() end
+						-- Refresh options panel
+						RefreshRangeCircleOptions()
+						LibStub("AceConfigRegistry-3.0"):NotifyChange("FarmHud")
+					end
+				},
+				-- Circle options will be added dynamically by RefreshRangeCircleOptions
+			}
+		},
+		----------------------------------------------
 		SuperTrackedQuest = {
-			type = "group", order = 1,
+			type = "group",
+			order = 1,
 			name = L["QuestArrow"],
 			args = {
 				desc = {
-					type = "description", order=1, fontSize="medium",
-					name = checkAddOnLoaded,-- ({"SuperTrackedQuest","desc"}),
+					type = "description",
+					order = 1,
+					fontSize = "medium",
+					name = checkAddOnLoaded, -- ({"SuperTrackedQuest","desc"}),
 				},
 				SuperTrackedQuest = {
-					type = "toggle", order = 2, width = "full",
+					type = "toggle",
+					order = 2,
+					width = "full",
 					name = L["QuestArrowHide"], --desc = L["QuestArrowHideDesc"],
 					disabled = checkAddOnLoaded
 				},
 				QuestArrowInfoMsg = {
-					type = "toggle", order = 3, width = "full",
-					name = L["QuestArrowInfoMsg"], desc = L["QuestArrowInfoMsgDesc"]
+					type = "toggle",
+					order = 3,
+					width = "full",
+					name = L["QuestArrowInfoMsg"],
+					desc = L["QuestArrowInfoMsgDesc"]
 				}
 			}
 		},
 		rangecircles_old = {
-			type = "group", order = 2, hidden=true,
+			type = "group",
+			order = 2,
+			hidden = true,
 			name = L["RangeCircles"],
 			args = {
 				-- gathercircle
 				gathercircle = {
-					type = "header", order = 10,
+					type = "header",
+					order = 10,
 					name = L["GatherCircle"],
 				},
 				gathercircle_desc = {
-					type = "description", order = 11, fontSize = "medium",
+					type = "description",
+					order = 11,
+					fontSize = "medium",
 					name = L["GatherCircleDesc"]
 				},
 				gathercircle_show = {
-					type = "toggle", order = 12, width = "double",
-					name = L["GatherCircleShow"], desc = L["GatherCircleShowDesc"]
+					type = "toggle",
+					order = 12,
+					width = "double",
+					name = L["GatherCircleShow"],
+					desc = L["GatherCircleShowDesc"]
 				},
 				gathercircle_color = {
-					type = "color", order = 13,
-					name = COLOR, desc = L["GatherCircleColorDesc"],
+					type = "color",
+					order = 13,
+					name = COLOR,
+					desc = L["GatherCircleColorDesc"],
 					hasAlpha = true
 				},
 				gathercircle_resetcolor = {
-					type = "execute", order = 14,
+					type = "execute",
+					order = 14,
 					name = L["ResetColor"], --desc = L["ResetColorDesc"]
 				},
 				-- healcircle
 				healcircle = {
-					type = "header", order = 20,
+					type = "header",
+					order = 20,
 					name = L["HealCircle"],
 				},
 				healcircle_desc = {
-					type = "description", order = 21, fontSize = "medium",
+					type = "description",
+					order = 21,
+					fontSize = "medium",
 					name = L["HealcircleDesc"]
 				},
 				healcircle_show = {
-					type = "toggle", order = 22, width = "double",
-					name = L["HealcircleShow"], desc = L["HealcircleShowDesc"]
+					type = "toggle",
+					order = 22,
+					width = "double",
+					name = L["HealcircleShow"],
+					desc = L["HealcircleShowDesc"]
 				},
 				healcircle_color = {
-					type = "color", order = 23,
-					name = COLOR, desc = L["HealcircleColorDesc"],
+					type = "color",
+					order = 23,
+					name = COLOR,
+					desc = L["HealcircleColorDesc"],
 					hasAlpha = true
 				},
 				healcircle_resetcolor = {
-					type = "execute", order = 24,
+					type = "execute",
+					order = 24,
 					name = L["ResetColor"], --desc = L["ResetColorDesc"]
 				},
 			}
 		},
 		coords = {
-			type = "group", order = 4,
+			type = "group",
+			order = 4,
 			name = L["Coords"],
 			args = {
 				coords_show = {
-					type = "toggle", order = 1,
-					name = L["CoordsShow"], desc = L["CoordsShowDesc"]
+					type = "toggle",
+					order = 1,
+					name = L["CoordsShow"],
+					desc = L["CoordsShowDesc"]
 				},
 				coords_radius = {
-					type = "range", order = 2,
-					name = L["ChangeRadius"], desc = L["ChangeRadiusDesc"],
-					min = 0.1, max = 0.9, step=0.005, isPercent=true
+					type = "range",
+					order = 2,
+					name = L["ChangeRadius"],
+					desc = L["ChangeRadiusDesc"],
+					min = 0.1,
+					max = 0.9,
+					step = 0.005,
+					isPercent = true
 				},
 				coords_bottom = {
-					type = "toggle", order = 3, width = "double",
-					name = L["CoordsBottom"], desc = L["CoordsBottomDesc"]
+					type = "toggle",
+					order = 3,
+					width = "double",
+					name = L["CoordsBottom"],
+					desc = L["CoordsBottomDesc"]
 				},
 				coords_color = {
-					type = "color", order = 4, hasAlpha = true,
-					name = COLOR, desc = L["CoordsColorDesc"]
+					type = "color",
+					order = 4,
+					hasAlpha = true,
+					name = COLOR,
+					desc = L["CoordsColorDesc"]
 				},
 				coords_resetcolor = {
-					type = "execute", order = 5,
-					name = L["ResetColor"], desc = L["CoordsColorResetDesc"]
+					type = "execute",
+					order = 5,
+					name = L["ResetColor"],
+					desc = L["CoordsColorResetDesc"]
 				}
 			}
 		},
 		time = {
-			type = "group", order = 5,
+			type = "group",
+			order = 5,
 			name = L["Time"],
 			args = {
 				time_show = {
-					type = "toggle", order = 1, width = "full",
-					name = L["TimeShow"], desc = L["TimeShowDesc"]
+					type = "toggle",
+					order = 1,
+					width = "full",
+					name = L["TimeShow"],
+					desc = L["TimeShowDesc"]
 				},
 				time_server = {
-					type = "toggle", order = 2,
-					name = L["TimeServer"], desc = L["TimeServerDesc"]
+					type = "toggle",
+					order = 2,
+					name = L["TimeServer"],
+					desc = L["TimeServerDesc"]
 				},
 				time_local = {
-					type = "toggle", order = 3,
-					name = L["TimeLocal"], desc = L["TimeLocalDesc"]
+					type = "toggle",
+					order = 3,
+					name = L["TimeLocal"],
+					desc = L["TimeLocalDesc"]
 				},
 				time_radius = {
-					type = "range", order = 4,
-					name = L["ChangeRadius"], desc = L["ChangeRadiusDesc"],
-					min = 0.1, max = 0.9, step=0.005, isPercent=true
+					type = "range",
+					order = 4,
+					name = L["ChangeRadius"],
+					desc = L["ChangeRadiusDesc"],
+					min = 0.1,
+					max = 0.9,
+					step = 0.005,
+					isPercent = true
 				},
 				time_bottom = {
-					type = "toggle", order = 5, width = "double",
-					name = L["TimeBottom"], desc = L["TimeBottomDesc"]
+					type = "toggle",
+					order = 5,
+					width = "double",
+					name = L["TimeBottom"],
+					desc = L["TimeBottomDesc"]
 				},
 				time_color = {
-					type = "color", order = 6, hasAlpha = true,
-					name = COLOR, desc = L["TimeColorDesc"]
+					type = "color",
+					order = 6,
+					hasAlpha = true,
+					name = COLOR,
+					desc = L["TimeColorDesc"]
 				},
 				time_resetcolor = {
-					type = "execute", order = 7,
-					name = L["ResetColor"], desc = L["TimeColorResetDesc"]
+					type = "execute",
+					order = 7,
+					name = L["ResetColor"],
+					desc = L["TimeColorResetDesc"]
 				},
 			}
 		},
 		onscreenbuttons = {
-			type = "group", order = 6,
+			type = "group",
+			order = 6,
 			name = L["OnScreen"],
 			args = {
 				buttons_show = {
-					type = "toggle", order = 1, width = "double",
-					name = L["OnScreenShow"], desc = L["OnScreenShowDesc"]
+					type = "toggle",
+					order = 1,
+					width = "double",
+					name = L["OnScreenShow"],
+					desc = L["OnScreenShowDesc"]
 				},
 				buttons_bottom = {
-					type = "toggle", order = 2, width = "double",
-					name = L["OnScreenBottom"], desc = L["OnScreenBottomDesc"],
+					type = "toggle",
+					order = 2,
+					width = "double",
+					name = L["OnScreenBottom"],
+					desc = L["OnScreenBottomDesc"],
 				},
 				buttons_radius = {
-					type = "range", order = 3,
-					name = L["ChangeRadius"], desc = L["ChangeRadiusDesc"],
-					min = 0.1, max = 0.9, step=0.005, isPercent=true
+					type = "range",
+					order = 3,
+					name = L["ChangeRadius"],
+					desc = L["ChangeRadiusDesc"],
+					min = 0.1,
+					max = 0.9,
+					step = 0.005,
+					isPercent = true
 				},
 				buttons_alpha = {
-					type = "range", order = 4,
-					name = OPACITY, desc = L["OnScreenAlphaDesc"],
-					min = 0, max = 1, step = 0.1, isPercent = true
+					type = "range",
+					order = 4,
+					name = OPACITY,
+					desc = L["OnScreenAlphaDesc"],
+					min = 0,
+					max = 1,
+					step = 0.1,
+					isPercent = true
 				}
 			}
 		},
 		tracking = {
-			type = "group", order = 8,
+			type = "group",
+			order = 8,
 			name = L["TrackingOptions"],
-			get = optTracking, set = optTracking,
+			get = optTracking,
+			set = optTracking,
 			childGroups = "tab",
 			args = {
 				desc = {
-					type = "description", order = 1, fontSize = "medium",
+					type = "description",
+					order = 1,
+					fontSize = "medium",
 					name = L["TrackingOptionsDesc"]
 				},
 				misc = {
-					type = "group", order = 2,
+					type = "group",
+					order = 2,
 					name = MISCELLANEOUS,
 					args = {
 						-- filled by function updateTrackingOptions
@@ -481,7 +793,8 @@ local options = {
 					hidden = true,
 				},
 				townsfolk = {
-					type = "group", order = 3,
+					type = "group",
+					order = 3,
 					name = TOWNSFOLK_TRACKING_TEXT or "Townsfolk",
 					args = {
 						-- filled by function updateTrackingOptions
@@ -491,90 +804,105 @@ local options = {
 			}
 		},
 		keybindings = {
-			type = "group", order = 99,
+			type = "group",
+			order = 99,
 			name = KEY_BINDINGS,
 			get = optKeyBind,
 			set = optKeyBind,
 			args = {
 				TOGGLEFARMHUD = {
-					type = "keybinding", order = 1, width = "double",
-					name = L["KeyBindToggle"], desc = L["KeyBindToggleDesc"]
+					type = "keybinding",
+					order = 1,
+					width = "double",
+					name = L["KeyBindToggle"],
+					desc = L["KeyBindToggleDesc"]
 				},
 				TOGGLEFARMHUDMOUSE = {
-					type = "keybinding", order = 2, width = "double",
-					name = L["KeyBindMouse"], desc = L["KeyBindMouseDesc"]
+					type = "keybinding",
+					order = 2,
+					width = "double",
+					name = L["KeyBindMouse"],
+					desc = L["KeyBindMouseDesc"]
 				},
 				TOGGLEFARMHUDBACKGROUND = {
-					type = "keybinding", order = 3, width = "double",
-					name = L["KeyBindBackground"], desc = L["KeyBindBackgroundDesc"]
+					type = "keybinding",
+					order = 3,
+					width = "double",
+					name = L["KeyBindBackground"],
+					desc = L["KeyBindBackgroundDesc"]
 				},
 			}
 		},
 		debugging = {
-			type = "group", order = 100,
+			type = "group",
+			order = 100,
 			name = BINDING_HEADER_DEBUG or "Debugging",
 			args = {
 				info = {
-					type = "description", order = 1, fontSize = "med",
+					type = "description",
+					order = 1,
+					fontSize = "med",
 					name = L["DebugOptInfo"]
 				},
 				frames = {
-					type = "execute", order = 2,
+					type = "execute",
+					order = 2,
 					name = L["DebugOptFrames"],
 					func = printFrames
 				}
 			}
 		},
 		credits = {
-			type = "group", order = 200,
+			type = "group",
+			order = 200,
 			name = L["Credits"],
 			args = {}
 		},
 	}
 };
 
-local trackingTypes,trackingOpts,trackingTemplate = {},{},{
+local trackingTypes, trackingOpts, trackingTemplate = {}, {}, {
 	type = "select", name = "", values = TrackingValues
 };
 local trackingPattern = "|T%s:26:26:0:0|t %s" -- Changed %d to %s for texture path support
 
-local function sortTrackingTypes(a,b)
-	return a.index<b.index;
+local function sortTrackingTypes(a, b)
+	return a.index < b.index;
 end
 
 local function updateTrackingOptions(info)
-	if info[#info]~="tracking" then return false end
+	if info[#info] ~= "tracking" then return false end
 	if ns.IsClassic() then
 		return true;
 	end
 	wipe(options.args.tracking.args.townsfolk.args);
 	wipe(options.args.tracking.args.misc.args);
 	trackingTypes = ns.GetTrackingTypes(); -- defined in FarmHud.lua
-	table.sort(trackingTypes,sortTrackingTypes);
-	for textureId,data in pairs(trackingTypes)do
-		local key = "tracking^"..textureId;
-		if trackingOpts[textureId]==nil then
+	table.sort(trackingTypes, sortTrackingTypes);
+	for textureId, data in pairs(trackingTypes) do
+		local key = "tracking^" .. textureId;
+		if trackingOpts[textureId] == nil then
 			trackingOpts[textureId] = CopyTable(trackingTemplate);
-			trackingOpts[textureId].name = trackingPattern:format(textureId,data.name);
+			trackingOpts[textureId].name = trackingPattern:format(textureId, data.name);
 			trackingOpts[textureId].order = data.index;
 		end
-		if data.level==2 then -- townfolk
+		if data.level == 2 then -- townfolk
 			options.args.tracking.args.townsfolk.args[key] = trackingOpts[textureId]
-			options.args.tracking.args.townsfolk.hidden=false;
+			options.args.tracking.args.townsfolk.hidden = false;
 		else -- misc
 			options.args.tracking.args.misc.args[key] = trackingOpts[textureId];
-			options.args.tracking.args.misc.hidden=false;
+			options.args.tracking.args.misc.hidden = false;
 		end
 	end
 	return false;
 end
 
 function ns.RegisterOptions()
-	if FarmHudDB==nil then
-		FarmHudDB={};
+	if FarmHudDB == nil then
+		FarmHudDB = {};
 	end
 
-	if FarmHudDB.MinimapIcon==nil then
+	if FarmHudDB.MinimapIcon == nil then
 		FarmHudDB.MinimapIcon = {
 			hide = false,
 			minimapPos = 220,
@@ -584,16 +912,16 @@ function ns.RegisterOptions()
 
 	if not ns.IsClassic() then
 		trackingTypes = ns.GetTrackingTypes();
-		for id, data in pairs(trackingTypes)do
-			dbDefaults["tracking^"..id] = "client"
+		for id, data in pairs(trackingTypes) do
+			dbDefaults["tracking^" .. id] = "client"
 		end
 	end
 
 	local modOptsOrder = 50;
-	for modName, mod in pairs(ns.modules)do
+	for modName, mod in pairs(ns.modules) do
 		if mod.dbDefaults then
-			for k,v in pairs(mod.dbDefaults)do
-				if (dbDefaults[k]==nil) then
+			for k, v in pairs(mod.dbDefaults) do
+				if (dbDefaults[k] == nil) then
 					dbDefaults[k] = v
 					modDB[k] = modName;
 				end
@@ -601,10 +929,10 @@ function ns.RegisterOptions()
 		end
 		if mod.AddOptions then
 			local opts = mod.AddOptions()
-			if type(opts)=="table" then
-				for k,v in pairs(opts)do
+			if type(opts) == "table" then
+				for k, v in pairs(opts) do
 					options.args[k] = v;
-					if v.order==nil then
+					if v.order == nil then
 						v.order = modOptsOrder;
 						modOptsOrder = modOptsOrder + 1;
 					end
@@ -613,26 +941,33 @@ function ns.RegisterOptions()
 		end
 	end
 
-	for k,v in pairs(dbDefaults)do
-		if (FarmHudDB[k]==nil) then
-			FarmHudDB[k]=v;
+	for k, v in pairs(dbDefaults) do
+		if (FarmHudDB[k] == nil) then
+			FarmHudDB[k] = v;
 		end
 	end
 
-	if FarmHudDB.hud_size==0 then
-		FarmHudDB.hud_size=1;
+	if FarmHudDB.hud_size == 0 then
+		FarmHudDB.hud_size = 1;
 	end
 
-	if FarmHudDB.MinimapIcon.show~=nil then
+	-- Ensure rangeCircles exists and has at least one circle
+	if not FarmHudDB.rangeCircles or #FarmHudDB.rangeCircles == 0 then
+		FarmHudDB.rangeCircles = {
+			{ name = "Gather", show = true, scale = 0.45, r = 0, g = 1, b = 0, a = 0.5 },
+		}
+	end
+
+	if FarmHudDB.MinimapIcon.show ~= nil then
 		FarmHudDB.MinimapIcon.hide = not FarmHudDB.MinimapIcon.show;
 		FarmHudDB.MinimapIcon.show = nil;
 	end
 
 	if not ns.IsClassic() then
-		for id, data in pairs(trackingTypes)do
-			local v = FarmHudDB["tracking^"..id];
-			if not (v=="client" or v=="true" or v=="false") then
-				FarmHudDB["tracking^"..id] = "client";
+		for id, data in pairs(trackingTypes) do
+			local v = FarmHudDB["tracking^" .. id];
+			if not (v == "client" or v == "true" or v == "false") then
+				FarmHudDB["tracking^" .. id] = "client";
 			end
 		end
 		options.args.tracking.hidden = updateTrackingOptions
@@ -640,6 +975,8 @@ function ns.RegisterOptions()
 		options.args.tracking = nil;
 	end
 
+	-- Refresh range circle options now that FarmHudDB is initialized
+	RefreshRangeCircleOptions()
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(addon, options);
 	LibStub("AceConfigDialog-3.0"):AddToBlizOptions(addon);
