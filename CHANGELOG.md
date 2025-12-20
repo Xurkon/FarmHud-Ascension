@@ -1,5 +1,17 @@
 # FarmHud Changelog
 
+## [2.0.7] - 2025-12-20
+
+### New Features
+- **Carbonite Compatibility** - FarmHud now works seamlessly with Carbonite addon. When FarmHud is active, Carbonite's minimap control is temporarily disabled (via `Nx.Map.MMO1 = false`), allowing GatherMate2 and Routes pins to display correctly on the HUD. Carbonite's control is restored when FarmHud is hidden.
+
+### Technical Changes
+- Added `carboniteState` tracking for MMO1 flag
+- Integrated Carbonite detection using `Nx.MapMinimapOwned()` API
+- Added one-time notification when Carbonite compatibility is active
+
+---
+
 ## [2.0.6] - 2025-12-19
 
 ### Documentation

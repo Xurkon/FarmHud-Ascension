@@ -242,8 +242,33 @@ end
 -- Addon Compatibility Layer
 -------------------------------------------------------------------------------
 
+-- Carbonite state storage
+local carboniteState = {
+    originalParent = nil,
+    originalPoint = nil,
+    originalScale = nil,
+    originalAlpha = nil,
+    originalSize = nil,
+}
+
 -- Reparent addon-specific pins using their APIs
 local function ReparentAddonPins(targetParent)
+    -- Carbonite - hide NXMiniMapBut during HUD mode to prevent tooltip conflicts
+    -- Note: Carbonite has its own custom map system separate from Blizzard's Minimap,
+    -- so we just hide the button to avoid errors rather than try to integrate it
+    if Nx and NXMiniMapBut and FarmHudDB.show_carbonite ~= false then
+        pcall(function()
+            -- Save original state
+            carboniteState.originalParent = NXMiniMapBut:GetParent()
+            carboniteState.wasShown = NXMiniMapBut:IsShown()
+            carboniteState.originalMouseEnabled = NXMiniMapBut:IsMouseEnabled()
+
+            -- Hide and disable mouse to prevent tooltip errors during HUD mode
+            NXMiniMapBut:EnableMouse(false)
+            NXMiniMapBut:Hide()
+        end)
+    end
+
     -- GatherMate2
     if GatherMate2 and FarmHudDB.show_gathermate then
         pcall(function()
@@ -274,6 +299,27 @@ end
 
 -- Restore addon-specific pins to Minimap
 local function RestoreAddonPins()
+    -- Carbonite - restore NXMiniMapBut visibility
+    if Nx and NXMiniMapBut then
+        pcall(function()
+            -- Restore mouse and visibility
+            if carboniteState.originalMouseEnabled ~= nil then
+                NXMiniMapBut:EnableMouse(carboniteState.originalMouseEnabled)
+            else
+                NXMiniMapBut:EnableMouse(true)
+            end
+
+            if carboniteState.wasShown then
+                NXMiniMapBut:Show()
+            end
+
+            -- Clear saved state
+            carboniteState.originalParent = nil
+            carboniteState.wasShown = nil
+            carboniteState.originalMouseEnabled = nil
+        end)
+    end
+
     -- GatherMate2
     if GatherMate2 then
         pcall(function()
@@ -654,8 +700,34 @@ local function OnShow()
     -- Save minimap state before modifying
     SaveMinimapState()
 
-    -- Reparent Minimap to our HUD container
+    -- Check if Carbonite owns the minimap and temporarily disable its control
+    local carboniteOwned = Nx and Nx.MapMinimapOwned and pcall(function() return Nx.MapMinimapOwned() end) and Nx.MapMinimapOwned()
+
+    if carboniteOwned then
+        -- Temporarily disable Carbonite's minimap control during FarmHud mode
+        -- Carbonite's MUE() and MiU() functions check self.MMO1 before managing the minimap
+        pcall(function()
+            local map = Nx.Map and Nx.Map:GeM(1)
+            if map then
+                -- Save original state
+                carboniteState.originalMMO1 = map.MMO1
+                -- Disable Carbonite's minimap ownership
+                map.MMO1 = false
+            end
+        end)
+
+        -- Print a one-time notice
+        if not carboniteState.warnedIncompatible then
+            print("|cFFFFCC00FarmHud:|r Carbonite detected. Temporarily disabling Carbonite minimap control for HUD mode.")
+            carboniteState.warnedIncompatible = true
+        end
+    end
+
+    -- Standard handling - reparent Blizzard Minimap (works with GatherMate2, Routes, HandyNotes, etc.)
     Minimap:SetParent(FarmHudMapCluster)
+
+    -- Ensure minimap is visible (Carbonite may have hidden it)
+    Minimap:Show()
 
     -- Hide ElvUI elements and other minimap children that shouldn't show on HUD
     HideMinimapChildren()
@@ -665,6 +737,16 @@ local function OnShow()
 
     -- Reparent addon pins
     ReparentAddonPins(Minimap)
+
+    -- Force GatherMate2 to update now that we've reparented
+    if GatherMate2 and FarmHudDB.show_gathermate then
+        pcall(function()
+            local display = GatherMate2:GetModule("Display")
+            if display and display.UpdateMiniMap then
+                display:UpdateMiniMap(true)
+            end
+        end)
+    end
 
     -- Set scales and position
     FarmHud:SetScales()
@@ -708,6 +790,17 @@ local function OnHide()
 
     -- Restore addon pins
     RestoreAddonPins()
+
+    -- Restore Carbonite's minimap control if we disabled it
+    if carboniteState.originalMMO1 ~= nil then
+        pcall(function()
+            local map = Nx and Nx.Map and Nx.Map:GeM(1)
+            if map then
+                map.MMO1 = carboniteState.originalMMO1
+            end
+            carboniteState.originalMMO1 = nil
+        end)
+    end
 
     -- Restore ElvUI elements and other minimap children
     RestoreMinimapChildren()
@@ -1076,6 +1169,10 @@ local function InitializeDB()
 
     if FarmHudDB.show_npcscan == nil then
         FarmHudDB.show_npcscan = true
+    end
+
+    if FarmHudDB.show_carbonite == nil then
+        FarmHudDB.show_carbonite = true
     end
 
     -- Cardinal points defaults
