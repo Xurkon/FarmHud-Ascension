@@ -1,5 +1,12 @@
 # FarmHud Changelog
 
+## [2.0.6] - 2025-12-19
+
+### Documentation
+- **Removed Xurkon Logo** - Cleaned up repository assets by removing the branding logo.
+
+---
+
 ## [2.0.5] - 2025-12-15
 
 ### Bug Fixes
