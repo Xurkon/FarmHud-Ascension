@@ -16,13 +16,12 @@ ns.FarmHud = FarmHud
 -- Note: FarmHudMixin and FarmHudMinimapDummyMixin are defined in FarmHud_Mixins.lua
 -- which loads before this file to prevent nil errors in XML scripts
 
--- Mixin function for module compatibility
+-- Mixin function for module compatibility (local to addon namespace only)
 ns.Mixin = function(object, mixin)
     for k, v in pairs(mixin) do object[k] = v end
     return object
 end
--- Global Mixin for modules
-Mixin = Mixin or ns.Mixin
+-- DO NOT set global Mixin - use existing Blizzard/Ascension global if available
 
 -- Helper functions for Options.lua compatibility
 ns.print = function(...) print("FarmHud:", ...) end
@@ -34,9 +33,7 @@ ns.IsDragonFlight = function() return false end
 ns.GetContinentID = function() return 0 end -- Stub for 3.3.5a
 ns.debugPrint = function() end              -- Debug print stub
 
--- C_AddOns polyfill for 3.3.5a
-C_AddOns = C_AddOns or {}
-C_AddOns.IsAddOnLoaded = C_AddOns.IsAddOnLoaded or function(name) return IsAddOnLoaded(name) end
+-- Use native IsAddOnLoaded directly - no polyfill needed for 3.3.5a
 
 -- GetTrackingTypes for Options.lua
 local trackingTypes, numTrackingTypes = {}, 0

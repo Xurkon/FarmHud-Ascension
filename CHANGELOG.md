@@ -1,5 +1,18 @@
 # FarmHud Changelog
 
+## [2.0.11] - 2025-12-21
+
+### Bug Fixes
+- **Removed Global Overwriting** - No longer overwrites Ascension globals (`Mixin`, `C_AddOns`)
+- FarmHud is now fully native, using only local namespace functions
+
+### Technical Changes
+- Removed `Mixin = Mixin or ns.Mixin` global assignment
+- Removed `C_AddOns` polyfill - using native `IsAddOnLoaded()` directly
+- All addon compatibility functions are now local to the namespace
+
+---
+
 ## [2.0.10] - 2025-12-21
 
 ### Bug Fixes
