@@ -1,3 +1,5 @@
 workflow/
+.agent/
+.gemini/
 *.zip
 *.log

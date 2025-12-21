@@ -1,5 +1,31 @@
 # FarmHud Changelog
 
+## [2.0.9] - 2025-12-21
+
+### New Features
+- **Routes & GatherMate2 HUD Display** - Routes lines and GatherMate2 pins now display correctly on the FarmHud HUD with minimap background hidden
+
+### Technical Changes
+- Created `AddonPinProxy` frame with Minimap API delegation (`GetZoom()`, `GetFrameLevel()`)
+- Routes and GatherMate2 now draw on the visible proxy frame instead of the hidden Minimap
+- Proxy frame matches Minimap scale and position for correct pin placement
+- Minimap background is hidden while addon pins remain fully visible
+
+---
+
+## [2.0.8] - 2025-12-20
+
+### New Features
+- **LootCollector Integration** - LootCollector pins now display correctly on the FarmHud HUD
+
+### Technical Changes
+- Created `FarmHudLootCollectorProxy` frame positioned identically to Minimap but with visible alpha
+- Reparent LootCollector pins to proxy frame when HUD is active
+- Hook LootCollector pin `SetPoint()` to redirect Minimap anchors to proxy frame
+- Restore pins to Minimap when HUD is closed
+
+---
+
 ## [2.0.7] - 2025-12-20
 
 ### New Features

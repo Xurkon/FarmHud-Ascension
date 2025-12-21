@@ -251,6 +251,37 @@ local carboniteState = {
     originalSize = nil,
 }
 
+-- LootCollector proxy frame - positioned exactly like Minimap but with alpha 1
+-- This allows LootCollector pins to be visible when reparented here
+local LootCollectorProxy = CreateFrame("Frame", "FarmHudLootCollectorProxy", FarmHudMapCluster)
+LootCollectorProxy:SetFrameStrata("HIGH")
+LootCollectorProxy:Hide()
+
+-- AddonPin proxy frame - for Routes, GatherMate2, and other minimap addons
+-- This frame mimics the Minimap API so addons can draw on it while Minimap is hidden
+local AddonPinProxy = CreateFrame("Frame", "FarmHudAddonPinProxy", FarmHudMapCluster)
+AddonPinProxy:SetFrameStrata("HIGH")
+AddonPinProxy:Hide()
+
+-- Add Minimap-like methods that Routes/GatherMate2 expect
+-- These delegate to the real Minimap for zoom/position calculations
+function AddonPinProxy:GetZoom()
+    return Minimap:GetZoom()
+end
+
+function AddonPinProxy:GetFrameLevel()
+    return Minimap:GetFrameLevel()
+end
+
+-- Routes also needs CreateTexture to work on this frame
+-- The frame already inherits this from Frame, so no override needed
+
+-- LootCollector state storage
+local lootCollectorState = {
+    pinsHooked = {},      -- Track hooked pins
+    originalSetPoint = nil, -- Store original SetPoint function
+}
+
 -- Reparent addon-specific pins using their APIs
 local function ReparentAddonPins(targetParent)
     -- Carbonite - hide NXMiniMapBut during HUD mode to prevent tooltip conflicts
@@ -269,21 +300,28 @@ local function ReparentAddonPins(targetParent)
         end)
     end
 
-    -- GatherMate2
+    -- Set up AddonPinProxy to match Minimap position/size for addon pins
+    -- This proxy has GetZoom() and other methods that Routes/GatherMate2 expect
+    AddonPinProxy:ClearAllPoints()
+    AddonPinProxy:SetAllPoints(Minimap)
+    AddonPinProxy:SetSize(Minimap:GetWidth(), Minimap:GetHeight())
+    AddonPinProxy:Show()
+
+    -- GatherMate2 - use AddonPinProxy which has GetZoom() delegation
     if GatherMate2 and FarmHudDB.show_gathermate then
         pcall(function()
             local display = GatherMate2:GetModule("Display")
             if display and display.ReparentMinimapPins then
-                display:ReparentMinimapPins(targetParent)
+                display:ReparentMinimapPins(AddonPinProxy)
                 display:ChangedVars(nil, "ROTATE_MINIMAP", "1")
             end
         end)
     end
 
-    -- Routes
+    -- Routes - use AddonPinProxy which has GetZoom() delegation
     if Routes and Routes.ReparentMinimap and FarmHudDB.show_routes then
         pcall(function()
-            Routes:ReparentMinimap(targetParent)
+            Routes:ReparentMinimap(AddonPinProxy)
             Routes:CVAR_UPDATE(nil, "ROTATE_MINIMAP", "1")
         end)
     end
@@ -293,6 +331,51 @@ local function ReparentAddonPins(targetParent)
     if NPCScan and NPCScan["Minimap"] and NPCScan["Minimap"].SetMinimapFrame and FarmHudDB.show_npcscan then
         pcall(function()
             NPCScan["Minimap"]:SetMinimapFrame(targetParent)
+        end)
+    end
+
+    -- LootCollector - reparent pins to our proxy frame
+    -- The proxy frame is positioned identically to Minimap but with alpha 1
+    if LootCollector and FarmHudDB.show_lootcollector ~= false then
+        pcall(function()
+            local Map = LootCollector:GetModule("Map", true)
+            if Map and Map._mmPins then
+                -- Position proxy frame to match Minimap exactly
+                LootCollectorProxy:ClearAllPoints()
+                LootCollectorProxy:SetAllPoints(Minimap)
+                LootCollectorProxy:SetScale(1) -- Proxy inherits Minimap's scale via SetAllPoints
+                LootCollectorProxy:Show()
+                
+                for _, pin in ipairs(Map._mmPins) do
+                    if pin then
+                        -- Store original parent
+                        if not lootCollectorState.pinsHooked[pin] then
+                            lootCollectorState.pinsHooked[pin] = {
+                                originalParent = pin:GetParent(),
+                            }
+                            
+                            -- Hook SetPoint to redirect Minimap anchors to our proxy
+                            local originalSetPoint = pin.SetPoint
+                            pin.SetPoint = function(self, point, relativeTo, relativePoint, x, y)
+                                -- If anchoring to Minimap, redirect to our proxy
+                                if relativeTo == Minimap and LootCollectorProxy:IsShown() then
+                                    return originalSetPoint(self, point, LootCollectorProxy, relativePoint, x, y)
+                                end
+                                return originalSetPoint(self, point, relativeTo, relativePoint, x, y)
+                            end
+                        end
+                        
+                        -- Reparent pin to proxy (visible parent)
+                        pin:SetParent(LootCollectorProxy)
+                        pin:SetFrameStrata("HIGH")
+                    end
+                end
+                
+                -- Trigger LootCollector to refresh pin positions (now anchored to proxy)
+                if Map.UpdateMinimap then
+                    Map:UpdateMinimap()
+                end
+            end
         end)
     end
 end
@@ -353,6 +436,30 @@ local function RestoreAddonPins()
             HandyNotes:UpdateMinimap()
         end)
     end
+
+    -- LootCollector - restore pins to original parent
+    if LootCollector then
+        pcall(function()
+            -- Hide proxy frame
+            LootCollectorProxy:Hide()
+            
+            -- Restore pins to original parent
+            for pin, state in pairs(lootCollectorState.pinsHooked) do
+                if pin and state.originalParent then
+                    pin:SetParent(state.originalParent)
+                end
+            end
+            
+            -- Trigger a minimap update
+            local Map = LootCollector:GetModule("Map", true)
+            if Map and Map.UpdateMinimap then
+                Map:UpdateMinimap()
+            end
+        end)
+    end
+
+    -- Hide the addon pin proxy frame
+    AddonPinProxy:Hide()
 end
 
 -------------------------------------------------------------------------------
@@ -397,6 +504,13 @@ local function OnUpdate(self, elapsed)
     -- Ensure MinimapCluster stays hidden
     if MinimapCluster:IsVisible() then
         MinimapCluster:Hide()
+    end
+
+    -- Keep LootCollector proxy frame synced with Minimap (fixes choppy rotation)
+    if LootCollectorProxy:IsShown() then
+        LootCollectorProxy:ClearAllPoints()
+        LootCollectorProxy:SetPoint("CENTER", Minimap, "CENTER", 0, 0)
+        LootCollectorProxy:SetSize(Minimap:GetSize())
     end
 
     -- Update cardinal direction positions based on player facing
@@ -576,6 +690,19 @@ local function RestoreMinimapState()
         Minimap:SetAlpha(originalMinimapAlpha)
     end
 
+    -- Restore mask texture
+    if carboniteState.originalMask then
+        pcall(function()
+            Minimap:SetMaskTexture(carboniteState.originalMask)
+        end)
+        carboniteState.originalMask = nil
+    else
+        -- Default minimap mask
+        pcall(function()
+            Minimap:SetMaskTexture("Textures\\MinimapMask")
+        end)
+    end
+
     -- Restore zoom (wrapped in pcall for ElvUI compatibility)
     if originalMinimapZoom then
         pcall(function() Minimap:SetZoom(originalMinimapZoom) end)
@@ -732,7 +859,7 @@ local function OnShow()
     -- Hide ElvUI elements and other minimap children that shouldn't show on HUD
     HideMinimapChildren()
 
-    -- Make minimap background transparent (only show pins)
+    -- Hide minimap background - Routes/GatherMate2 now draw on AddonPinProxy which is visible
     Minimap:SetAlpha(0)
 
     -- Reparent addon pins
@@ -750,6 +877,13 @@ local function OnShow()
 
     -- Set scales and position
     FarmHud:SetScales()
+
+    -- Update AddonPinProxy to match Minimap's scale and position after scaling
+    -- This ensures Routes/GatherMate2 lines are drawn in the correct location
+    AddonPinProxy:ClearAllPoints()
+    AddonPinProxy:SetPoint("CENTER", FarmHudMapCluster, "CENTER", 0, 0)
+    AddonPinProxy:SetScale(Minimap:GetScale())
+    AddonPinProxy:SetSize(Minimap:GetWidth(), Minimap:GetHeight())
 
     -- Disable minimap mouse on HUD
     Minimap:EnableMouse(false)
