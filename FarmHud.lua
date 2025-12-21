@@ -249,6 +249,7 @@ local carboniteState = {
     originalScale = nil,
     originalAlpha = nil,
     originalSize = nil,
+    originalMask = nil,
 }
 
 -- LootCollector proxy frame - positioned exactly like Minimap but with alpha 1
@@ -587,6 +588,16 @@ local function SaveMinimapState()
 
     -- Save original zoom and lock it
     originalMinimapZoom = Minimap:GetZoom()
+
+    -- Save original mask texture (for square/round minimap restoration)
+    -- Try to get current mask, default to nil if not available
+    carboniteState.originalMask = nil
+    pcall(function()
+        -- GetMaskTexture is available in some clients
+        if Minimap.GetMaskTexture then
+            carboniteState.originalMask = Minimap:GetMaskTexture()
+        end
+    end)
 end
 
 -- Track hidden Minimap children (ElvUI panels, etc.)
@@ -691,17 +702,15 @@ local function RestoreMinimapState()
     end
 
     -- Restore mask texture
+    -- Only restore if we have a saved mask; do NOT default to round mask
+    -- This preserves square minimap addons like ElvUI
     if carboniteState.originalMask then
         pcall(function()
             Minimap:SetMaskTexture(carboniteState.originalMask)
         end)
         carboniteState.originalMask = nil
-    else
-        -- Default minimap mask
-        pcall(function()
-            Minimap:SetMaskTexture("Textures\\MinimapMask")
-        end)
     end
+    -- If no mask was saved, don't change the current mask - let the addon handle it
 
     -- Restore zoom (wrapped in pcall for ElvUI compatibility)
     if originalMinimapZoom then

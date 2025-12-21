@@ -1,5 +1,17 @@
 # FarmHud Changelog
 
+## [2.0.10] - 2025-12-21
+
+### Bug Fixes
+- **Minimap Shape Restoration** - Fixed issue where toggling FarmHud would change minimap to circular shape instead of restoring original (square) shape
+
+### Technical Changes
+- Added `originalMask` field to carboniteState storage
+- Save original mask texture in `SaveMinimapState()` using `GetMaskTexture()` if available
+- Removed default round mask fallback in `RestoreMinimapState()` - now preserves custom minimap shapes (ElvUI, etc.)
+
+---
+
 ## [2.0.9] - 2025-12-21
 
 ### New Features
