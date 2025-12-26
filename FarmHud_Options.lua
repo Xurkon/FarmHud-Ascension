@@ -115,9 +115,9 @@ end
 local function checkAddOnLoaded(info)
 	local key, pKey = info[#info], info[#info - 1];
 	if isAddOnsLoadedForOption[key] then
-		return not IsAddOnLoaded(isAddOnsLoadedForOption[key].addon);
+		return not C_AddOns.IsAddOnLoaded(isAddOnsLoadedForOption[key].addon);
 	elseif isAddOnsLoadedForOption[pKey] then
-		local isLoaded = IsAddOnLoaded(isAddOnsLoadedForOption[pKey].addon) and "Loaded" or "NotLoaded";
+		local isLoaded = C_AddOns.IsAddOnLoaded(isAddOnsLoadedForOption[pKey].addon) and "Loaded" or "NotLoaded";
 		if isAddOnsLoadedForOption[pKey][key .. isLoaded] then
 			return isAddOnsLoadedForOption[pKey][key .. isLoaded];
 		elseif isAddOnsLoadedForOption[pKey][key] then

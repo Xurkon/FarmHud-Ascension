@@ -1,72 +1,10 @@
 # FarmHud Changelog
 
-## [2.0.11] - 2025-12-21
+## [2.0.6] - 2025-12-25
 
 ### Bug Fixes
-- **Removed Global Overwriting** - No longer overwrites Ascension globals (`Mixin`, `C_AddOns`)
-- FarmHud is now fully native, using only local namespace functions
 
-### Technical Changes
-- Removed `Mixin = Mixin or ns.Mixin` global assignment
-- Removed `C_AddOns` polyfill - using native `IsAddOnLoaded()` directly
-- All addon compatibility functions are now local to the namespace
-
----
-
-## [2.0.10] - 2025-12-21
-
-### Bug Fixes
-- **Minimap Shape Restoration** - Fixed issue where toggling FarmHud would change minimap to circular shape instead of restoring original (square) shape
-
-### Technical Changes
-- Added `originalMask` field to carboniteState storage
-- Save original mask texture in `SaveMinimapState()` using `GetMaskTexture()` if available
-- Removed default round mask fallback in `RestoreMinimapState()` - now preserves custom minimap shapes (ElvUI, etc.)
-
----
-
-## [2.0.9] - 2025-12-21
-
-### New Features
-- **Routes & GatherMate2 HUD Display** - Routes lines and GatherMate2 pins now display correctly on the FarmHud HUD with minimap background hidden
-
-### Technical Changes
-- Created `AddonPinProxy` frame with Minimap API delegation (`GetZoom()`, `GetFrameLevel()`)
-- Routes and GatherMate2 now draw on the visible proxy frame instead of the hidden Minimap
-- Proxy frame matches Minimap scale and position for correct pin placement
-- Minimap background is hidden while addon pins remain fully visible
-
----
-
-## [2.0.8] - 2025-12-20
-
-### New Features
-- **LootCollector Integration** - LootCollector pins now display correctly on the FarmHud HUD
-
-### Technical Changes
-- Created `FarmHudLootCollectorProxy` frame positioned identically to Minimap but with visible alpha
-- Reparent LootCollector pins to proxy frame when HUD is active
-- Hook LootCollector pin `SetPoint()` to redirect Minimap anchors to proxy frame
-- Restore pins to Minimap when HUD is closed
-
----
-
-## [2.0.7] - 2025-12-20
-
-### New Features
-- **Carbonite Compatibility** - FarmHud now works seamlessly with Carbonite addon. When FarmHud is active, Carbonite's minimap control is temporarily disabled (via `Nx.Map.MMO1 = false`), allowing GatherMate2 and Routes pins to display correctly on the HUD. Carbonite's control is restored when FarmHud is hidden.
-
-### Technical Changes
-- Added `carboniteState` tracking for MMO1 flag
-- Integrated Carbonite detection using `Nx.MapMinimapOwned()` API
-- Added one-time notification when Carbonite compatibility is active
-
----
-
-## [2.0.6] - 2025-12-19
-
-### Documentation
-- **Removed Xurkon Logo** - Cleaned up repository assets by removing the branding logo.
+- **Fixed stack overflow with MinimapButtonFrame** - Added recursion guard to prevent infinite loop when both FarmHud and MBF iterate over `Minimap:GetChildren()` simultaneously
 
 ---
 

@@ -16,12 +16,13 @@ ns.FarmHud = FarmHud
 -- Note: FarmHudMixin and FarmHudMinimapDummyMixin are defined in FarmHud_Mixins.lua
 -- which loads before this file to prevent nil errors in XML scripts
 
--- Mixin function for module compatibility (local to addon namespace only)
+-- Mixin function for module compatibility
 ns.Mixin = function(object, mixin)
     for k, v in pairs(mixin) do object[k] = v end
     return object
 end
--- DO NOT set global Mixin - use existing Blizzard/Ascension global if available
+-- Global Mixin for modules
+Mixin = Mixin or ns.Mixin
 
 -- Helper functions for Options.lua compatibility
 ns.print = function(...) print("FarmHud:", ...) end
@@ -33,7 +34,9 @@ ns.IsDragonFlight = function() return false end
 ns.GetContinentID = function() return 0 end -- Stub for 3.3.5a
 ns.debugPrint = function() end              -- Debug print stub
 
--- Use native IsAddOnLoaded directly - no polyfill needed for 3.3.5a
+-- C_AddOns polyfill for 3.3.5a
+C_AddOns = C_AddOns or {}
+C_AddOns.IsAddOnLoaded = C_AddOns.IsAddOnLoaded or function(name) return IsAddOnLoaded(name) end
 
 -- GetTrackingTypes for Options.lua
 local trackingTypes, numTrackingTypes = {}, 0
@@ -597,6 +600,10 @@ local function SaveMinimapState()
     end)
 end
 
+-- Recursion guard to prevent stack overflow when iterating Minimap children
+-- (prevents FarmHud and MinimapButtonFrame from triggering each other)
+local isIteratingMinimapChildren = false
+
 -- Track hidden Minimap children (ElvUI panels, etc.)
 local hiddenMinimapChildren = {}
 
@@ -612,6 +619,10 @@ local ELVUI_MINIMAP_FRAMES = {
 }
 
 local function HideMinimapChildren()
+    -- Prevent stack overflow from recursive calls (FarmHud/MinimapButtonFrame interaction)
+    if isIteratingMinimapChildren then return end
+    isIteratingMinimapChildren = true
+
     wipe(hiddenMinimapChildren)
 
     -- Hide specific global ElvUI frames by name
@@ -624,18 +635,21 @@ local function HideMinimapChildren()
     end
 
     -- Get all children of Minimap frame and hide those that are visible
-    for _, child in pairs({ Minimap:GetChildren() }) do
-        if child and child:IsShown() then
-            -- Skip addon-specific frames we want to keep (like Routes, GatherMate pins)
-            local name = child:GetName() or ""
-            -- Only hide frames that look like UI elements (not pins)
-            -- ElvUI typically uses names containing "ElvUI" or "Difficulty"
-            if name:match("ElvUI") or name:match("Difficulty") or name:match("Instance") or name:match("Button") or name:match("Panel") then
-                hiddenMinimapChildren[child] = true
-                child:Hide()
+    -- Use pcall to prevent errors from propagating
+    pcall(function()
+        for _, child in pairs({ Minimap:GetChildren() }) do
+            if child and child:IsShown() then
+                -- Skip addon-specific frames we want to keep (like Routes, GatherMate pins)
+                local name = child:GetName() or ""
+                -- Only hide frames that look like UI elements (not pins)
+                -- ElvUI typically uses names containing "ElvUI" or "Difficulty"
+                if name:match("ElvUI") or name:match("Difficulty") or name:match("Instance") or name:match("Button") or name:match("Panel") then
+                    hiddenMinimapChildren[child] = true
+                    child:Hide()
+                end
             end
         end
-    end
+    end)
 
     -- Also get all regions (textures, fontstrings) and hide non-essential ones
     for _, region in pairs({ Minimap:GetRegions() }) do
@@ -651,6 +665,8 @@ local function HideMinimapChildren()
             end
         end
     end
+
+    isIteratingMinimapChildren = false
 end
 
 local function RestoreMinimapChildren()
