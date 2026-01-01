@@ -345,7 +345,7 @@
         <p class="subtitle">Turn your minimap into a transparent HUD for farming resources</p>
 
         <div class="badges">
-            <span class="badge version">v2.0.6</span>
+            <span class="badge version">v2.0.7</span>
             <span class="badge wow">WoW 3.3.5a</span>
             <span class="badge platform">Project Ascension</span>
         </div>
@@ -397,6 +397,10 @@
                     <h3>🎮 Auto-Hide</h3>
                     <p>Automatically hide HUD when entering combat or instances.</p>
                 </div>
+                <div class="feature-card">
+                    <h3>🔌 Addon Pins Toggle</h3>
+                    <p>New options panel to enable/disable specific addon pins on the HUD (Questie, GatherMate2, Routes, etc).</p>
+                </div>
             </div>
         </section>
 
@@ -441,19 +445,29 @@
             <p style="color: var(--text-secondary); margin-bottom: 20px;">Works seamlessly with minimap addons that add
                 pins:</p>
             <div class="addons-grid">
+                <div class="addon-tag">Questie</div>
                 <div class="addon-tag">GatherMate2</div>
                 <div class="addon-tag">Routes</div>
                 <div class="addon-tag">HandyNotes</div>
                 <div class="addon-tag">TomTom</div>
                 <div class="addon-tag">Carbonite</div>
                 <div class="addon-tag">LootCollector</div>
+                <div class="addon-tag">NPCScan Overlay</div>
             </div>
         </section>
 
         <section>
             <h2>Latest Changes</h2>
             <div class="changelog">
-                <h3>v2.0.6 - December 25, 2025</h3>
+                <h3>v2.0.7 - January 1, 2026</h3>
+                <ul>
+                    <li>Added Questie 3.3.5 integration - quest objective pins now display on FarmHud</li>
+                    <li>New Addon Pins options section to toggle addon pins on/off</li>
+                    <li>Fixed Questie pin rotation - pins stay fixed in world position</li>
+                    <li>Added SetZoom to AddonPinProxy for Questie compatibility</li>
+                </ul>
+
+                <h3 style="margin-top: 20px;">v2.0.6 - December 25, 2025</h3>
                 <ul>
                     <li>Fixed stack overflow with MinimapButtonFrame - Added recursion guard for GetChildren iteration
                     </li>
