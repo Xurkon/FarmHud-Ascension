@@ -52,6 +52,14 @@ local dbDefaults = {
 	rangeCircles = {
 		{ name = "Gather", show = true, scale = 0.45, r = 0, g = 1, b = 0, a = 0.5 },
 	},
+	-- Addon pin toggles
+	show_questie = true,
+	show_gathermate = true,
+	show_routes = true,
+	show_lootcollector = true,
+	show_npcscan = true,
+	show_handynotes = true,
+	show_carbonite = true,
 }
 local modDB = {};
 local excludeFrames = {}
@@ -529,6 +537,104 @@ options = {
 					end
 				},
 				-- Circle options will be added dynamically by RefreshRangeCircleOptions
+			}
+		},
+		----------------------------------------------
+		addonpins = {
+			type = "group",
+			order = 3,
+			name = L["AddonPins"] or "Addon Pins",
+			args = {
+				desc = {
+					type = "description",
+					order = 0,
+					fontSize = "medium",
+					name = L["AddonPinsDesc"] or "Toggle which addon pins are shown on the FarmHud display."
+				},
+				show_questie = {
+					type = "toggle",
+					order = 1,
+					width = "full",
+					name = "|TInterface\\AddOns\\Questie-335\\Icons\\available:18|t Questie",
+					desc = L["AddonPinsQuestieDesc"] or "Show Questie quest objective pins on FarmHud.",
+					get = function() return FarmHudDB.show_questie ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_questie = value
+					end,
+					disabled = function() return not (QuestieCompat and QuestieCompat.HBDPins) end,
+				},
+				show_gathermate = {
+					type = "toggle",
+					order = 2,
+					width = "full",
+					name = "|TInterface\\Icons\\INV_Misc_Flower_02:18|t GatherMate2",
+					desc = L["AddonPinsGatherMateDesc"] or "Show GatherMate2 herb/ore pins on FarmHud.",
+					get = function() return FarmHudDB.show_gathermate ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_gathermate = value
+					end,
+					disabled = function() return not GatherMate2 end,
+				},
+				show_routes = {
+					type = "toggle",
+					order = 3,
+					width = "full",
+					name = "|TInterface\\Icons\\Ability_Tracking:18|t Routes",
+					desc = L["AddonPinsRoutesDesc"] or "Show Routes path lines on FarmHud.",
+					get = function() return FarmHudDB.show_routes ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_routes = value
+					end,
+					disabled = function() return not Routes end,
+				},
+				show_lootcollector = {
+					type = "toggle",
+					order = 4,
+					width = "full",
+					name = "|TInterface\\Icons\\INV_Misc_Bag_10:18|t LootCollector",
+					desc = L["AddonPinsLootCollectorDesc"] or "Show LootCollector loot discovery pins on FarmHud.",
+					get = function() return FarmHudDB.show_lootcollector ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_lootcollector = value
+					end,
+					disabled = function() return not LootCollector end,
+				},
+				show_npcscan = {
+					type = "toggle",
+					order = 5,
+					width = "full",
+					name = "|TInterface\\Icons\\INV_Misc_Head_Dragon_01:18|t NPCScan Overlay",
+					desc = L["AddonPinsNPCScanDesc"] or "Show NPCScan rare spawn overlay on FarmHud.",
+					get = function() return FarmHudDB.show_npcscan ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_npcscan = value
+					end,
+					disabled = function() return not (_NPCScan and _NPCScan.Overlay) end,
+				},
+				show_handynotes = {
+					type = "toggle",
+					order = 6,
+					width = "full",
+					name = "|TInterface\\Icons\\INV_Misc_Note_01:18|t HandyNotes",
+					desc = L["AddonPinsHandyNotesDesc"] or "Show HandyNotes pins on FarmHud.",
+					get = function() return FarmHudDB.show_handynotes ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_handynotes = value
+					end,
+					disabled = function() return not HandyNotes end,
+				},
+				show_carbonite = {
+					type = "toggle",
+					order = 7,
+					width = "full",
+					name = "|TInterface\\Icons\\INV_Misc_Map_01:18|t Carbonite",
+					desc = L["AddonPinsCarboniteDesc"] or "Hide Carbonite minimap button during FarmHud (prevents tooltip conflicts).",
+					get = function() return FarmHudDB.show_carbonite ~= false end,
+					set = function(_, value)
+						FarmHudDB.show_carbonite = value
+					end,
+					disabled = function() return not Nx end,
+				},
 			}
 		},
 		----------------------------------------------

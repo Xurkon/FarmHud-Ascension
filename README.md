@@ -1,6 +1,6 @@
 # FarmHud
 
-![Version](https://img.shields.io/badge/version-2.0.6-blue?style=for-the-badge) ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.7-blue?style=for-the-badge) ![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange?style=for-the-badge)
 [![Platform](https://img.shields.io/badge/platform-Project%20Ascension-green?style=for-the-badge)](https://ascension.gg/)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=for-the-badge)](https://Xurkon.github.io/FarmHud-Ascension/)
 ![Downloads](https://img.shields.io/github/downloads/Xurkon/FarmHud-Ascension/total?style=for-the-badge&label=DOWNLOADS&color=e67e22)
@@ -19,7 +19,7 @@ Turn your minimap into a HUD for farming ore, herbs, and other resources!
 
 ![FarmHud Pins](./farmhud_pins.jpg)
 
-*Routes lines, GatherMate2 pins, and LootCollector pins all displaying correctly on the HUD*
+*Routes lines, GatherMate2 pins, Questie objectives, and LootCollector pins all displaying correctly on the HUD*
 
 ## Features
 
@@ -36,6 +36,7 @@ Turn your minimap into a HUD for farming ore, herbs, and other resources!
 * Key bindings
 * Hide in instances option
 * Hide in combat option
+* **Addon Pins options** - Toggle which addon pins show on HUD
 
 ## Commands
 
@@ -51,12 +52,14 @@ or by chat command `/farmhud options`
 
 Works with minimap addons that add pins:
 
+* **Questie** - Quest objective pins display on HUD
 * GatherMate2
 * Routes  
 * HandyNotes
 * TomTom
 * **Carbonite** - Automatically disables Carbonite's minimap control during HUD mode
 * **LootCollector** - Pins display correctly on the HUD
+* **NPCScan Overlay** - Rare spawn overlays on HUD
 
 ## Macro Functions
 

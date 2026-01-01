@@ -270,6 +270,10 @@ function AddonPinProxy:GetZoom()
     return Minimap:GetZoom()
 end
 
+function AddonPinProxy:SetZoom(zoom)
+    return Minimap:SetZoom(zoom)
+end
+
 function AddonPinProxy:GetFrameLevel()
     return Minimap:GetFrameLevel()
 end
@@ -379,6 +383,20 @@ local function ReparentAddonPins(targetParent)
             end
         end)
     end
+
+    -- Questie - uses HBDPins system with SetMinimapObject
+    if QuestieCompat and QuestieCompat.HBDPins and FarmHudDB.show_questie ~= false then
+        pcall(function()
+            QuestieCompat.HBDPins:SetMinimapObject(AddonPinProxy)
+            -- Notify Questie about rotation change (like GatherMate2/Routes)
+            if QuestieCompat.HBDPins.updateFrame then
+                local handler = QuestieCompat.HBDPins.updateFrame:GetScript("OnEvent")
+                if handler then
+                    handler(QuestieCompat.HBDPins.updateFrame, "CVAR_UPDATE", "ROTATE_MINIMAP", "1")
+                end
+            end
+        end)
+    end
 end
 
 -- Restore addon-specific pins to Minimap
@@ -461,6 +479,20 @@ local function RestoreAddonPins()
 
     -- Hide the addon pin proxy frame
     AddonPinProxy:Hide()
+
+    -- Questie - restore to normal Minimap
+    if QuestieCompat and QuestieCompat.HBDPins then
+        pcall(function()
+            QuestieCompat.HBDPins:SetMinimapObject(Minimap)
+            -- Notify Questie about rotation change back to original setting
+            if QuestieCompat.HBDPins.updateFrame then
+                local handler = QuestieCompat.HBDPins.updateFrame:GetScript("OnEvent")
+                if handler then
+                    handler(QuestieCompat.HBDPins.updateFrame, "CVAR_UPDATE", "ROTATE_MINIMAP", originalRotateSetting or "0")
+                end
+            end
+        end)
+    end
 end
 
 -------------------------------------------------------------------------------

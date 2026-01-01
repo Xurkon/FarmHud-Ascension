@@ -1,5 +1,22 @@
 # FarmHud Changelog
 
+## [2.0.7] - 2026-01-01
+
+### New Features
+
+- **Questie Integration** - Questie 3.3.5 quest objective pins now display on FarmHud
+- **Addon Pins Options** - New options panel section to toggle addon pins on/off:
+  - Questie, GatherMate2, Routes, LootCollector, NPCScan Overlay, HandyNotes, Carbonite
+  - Each toggle shows addon icon and is disabled if addon not installed
+  - All addons enabled by default
+
+### Bug Fixes
+
+- **Fixed Questie pin rotation** - Pins now stay fixed in world position instead of rotating with player view
+- **Added SetZoom to AddonPinProxy** - Prevents nil error when Questie checks indoor/outdoor zoom levels
+
+---
+
 ## [2.0.6] - 2025-12-25
 
 ### Bug Fixes
